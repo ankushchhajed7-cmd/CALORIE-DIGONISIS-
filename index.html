@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <!--
-  Calorie Diagnosis — v1.01
+  Calorie Diagnosis — v1.02
   Ankush New Vision
+  v1.02 (23-09-2026): Gemini model fix
+   - Default model gemini-3.6-flash (gemini-2.5-flash naye users ke liye band)
+   - Purana 1.x/2.x model save ho to apne aap 3.6-flash par shift
+   - Google agar error mein naya model bataye to app khud usi par switch karke dobara try karta hai
   v1.01 (23-09-2026): Poshan tracking
    - 10 nutrient: Calorie, Protein, Carbs, Fat, Sodium, Magnesium, Potassium, Zinc, Vitamin D, Vitamin C
    - Roz ki zaroorat (profile se) vs aaj kitna khaya, % bar ke saath (Aaj + History)
@@ -317,7 +321,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
       <label class="btn">⬆️ Backup restore<input type="file" id="fImp" accept="application/json,.json" hidden></label>
     </div>
     <button class="btn danger full" id="bClr">Saari diary mitao</button>
-    <p class="ver">Calorie Diagnosis v1.01, Ankush New Vision</p>
+    <p class="ver">Calorie Diagnosis v1.02, Ankush New Vision</p>
   </section>
 </main>
 
@@ -341,7 +345,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 
 <script>
 'use strict';
-const VERSION = '1.01';
+const VERSION = '1.02';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad = n => String(n).padStart(2, '0');
@@ -363,7 +367,8 @@ const LS = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { toast('Storage full hai — backup lekar purani diary mitao'); return false; } }
 };
 let profile = LS.get('cd_profile', null);
-let api = Object.assign({provider: 'gemini', geminiKey: '', claudeKey: '', geminiModel: 'gemini-2.5-flash', claudeModel: 'claude-sonnet-5'}, LS.get('cd_api', {}));
+let api = Object.assign({provider: 'gemini', geminiKey: '', claudeKey: '', geminiModel: 'gemini-3.6-flash', claudeModel: 'claude-sonnet-5'}, LS.get('cd_api', {}));
+if (/^gemini-(1|2)\./.test(api.geminiModel || '')) { api.geminiModel = 'gemini-3.6-flash'; LS.set('cd_api', api); }
 let entries = LS.get('cd_entries', []);
 let aiChart = LS.get('cd_aichart', null);
 let pending = null;
@@ -623,14 +628,31 @@ async function aiCall(prompt, b64) {
   const parts = [];
   if (b64) parts.push({inline_data: {mime_type: 'image/jpeg', data: b64}});
   parts.push({text: prompt});
-  const m = encodeURIComponent(api.geminiModel || 'gemini-2.5-flash');
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(api.geminiKey)}`, {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({contents: [{parts}], generationConfig: {temperature: .2, responseMimeType: 'application/json'}})
-  });
-  const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(d?.error?.message || 'Gemini error ' + r.status);
-  return (d.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
+  const call = async model => {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(api.geminiKey)}`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({contents: [{parts}], generationConfig: {responseMimeType: 'application/json'}})
+    });
+    const d = await r.json().catch(() => ({}));
+    return {ok: r.ok, status: r.status, d};
+  };
+  let model = api.geminiModel || 'gemini-3.6-flash';
+  let res = await call(model);
+  if (!res.ok) {
+    const msg = res.d?.error?.message || '';
+    const sug = msg.match(/use\s+(?:models\/)?(gemini-[a-z0-9.\-]+)/i);
+    if (sug && sug[1] !== model) {           // Google ne naya model bataya -> usi par shift
+      model = sug[1];
+      res = await call(model);
+      if (res.ok) {
+        api.geminiModel = model; LS.set('cd_api', api);
+        const inp = document.querySelector('#aGModel'); if (inp) inp.value = model;
+        toast('Model apne aap ' + model + ' par badal diya');
+      }
+    }
+  }
+  if (!res.ok) throw new Error(res.d?.error?.message || 'Gemini error ' + res.status);
+  return (res.d.candidates?.[0]?.content?.parts || []).filter(p => !p.thought).map(p => p.text || '').join('');
 }
 function parseJSON(t) {
   t = String(t).replace(/```json|```/g, '').trim();
@@ -873,7 +895,7 @@ function saveProfile() {
   toast('Profile save ho gayi');
 }
 function saveApi() {
-  api = {provider: $('#aProv').value, geminiKey: $('#aGKey').value.trim(), geminiModel: $('#aGModel').value.trim() || 'gemini-2.5-flash',
+  api = {provider: $('#aProv').value, geminiKey: $('#aGKey').value.trim(), geminiModel: $('#aGModel').value.trim() || 'gemini-3.6-flash',
     claudeKey: $('#aCKey').value.trim(), claudeModel: $('#aCModel').value.trim() || 'claude-sonnet-5'};
   LS.set('cd_api', api);
   toast('AI setting save ho gayi');
