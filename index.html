@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<!--
+  Calorie Diagnosis — v1.01
+  Ankush New Vision
+  v1.01 (23-09-2026): Poshan tracking
+   - 10 nutrient: Calorie, Protein, Carbs, Fat, Sodium, Magnesium, Potassium, Zinc, Vitamin D, Vitamin C
+   - Roz ki zaroorat (profile se) vs aaj kitna khaya, % bar ke saath (Aaj + History)
+   - AI scan + offline list dono se minerals/vitamins aate hain; offline list 68 items
+   - Scan result mein minerals/vitamins ki jhalak
+   - Kami/zyadati par suggestions (namak, potassium, magnesium, zinc, vit C, vit D)
+   - Settings mein roz ki zaroorat ki table
+   - Fix: scan sheet mein Meal box pichakta tha
+  v1.00 (23-09-2026): Pehla build
+   - Camera / gallery / screenshot se khana scan -> AI calorie + protein/carbs/fat
+   - Gemini ya Claude API (key sirf phone ke browser mein)
+   - Din + time ke saath diary, meal-wise (Nashta/Lunch/Snack/Dinner)
+   - Profile se auto calorie target (Mifflin-St Jeor), safe minimum limit
+   - 7 din ka chart, koi bhi din dekho
+   - Suggestions + offline diet chart (Veg/Jain/Egg/Non-veg) + AI diet chart
+   - Manual add: 60 Indian items ki offline list + apna item
+   - Backup download / restore
+-->
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calorie Diagnosis</title>
+<meta name="theme-color" content="#1D5234">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Hind:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F6F1;--surface:#FFFFFF;--ink:#16261D;--muted:#5C6E62;
+  --leaf:#2F7A4D;--leaf-deep:#1D5234;--haldi:#E8A317;--chili:#C4432B;
+  --line:#DCE3DD;--track:#E1E7E3;--plate:#F8FAF8;--steel-hi:#F6F8F7;--steel-lo:#B4BEB8;--chip:#E6F0E9;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1813;--surface:#17231C;--ink:#E6EEE8;--muted:#9AAEA1;
+    --leaf:#5DB47F;--leaf-deep:#8FD3A8;--haldi:#F2B93B;--chili:#EA6A52;
+    --line:#27372D;--track:#26352C;--plate:#1A271F;--steel-hi:#4A5850;--steel-lo:#1E2A23;--chip:#1F3327;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1813;--surface:#17231C;--ink:#E6EEE8;--muted:#9AAEA1;
+  --leaf:#5DB47F;--leaf-deep:#8FD3A8;--haldi:#F2B93B;--chili:#EA6A52;
+  --line:#27372D;--track:#26352C;--plate:#1A271F;--steel-hi:#4A5850;--steel-lo:#1E2A23;--chip:#1F3327;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 'Hind','Noto Sans Devanagari','Noto Sans',system-ui,sans-serif;min-height:100%;padding-bottom:88px;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:'Baloo 2','Hind',system-ui,sans-serif;line-height:1.15;margin:0}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--haldi);outline-offset:2px;border-radius:8px}
+.muted{color:var(--muted)}.small{font-size:.86rem}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 18px 10px;border-bottom:1px solid var(--line)}
+.top h1{font-size:1.35rem;font-weight:800;color:var(--leaf-deep)}
+.top .sub{margin:0;font-size:.82rem;color:var(--muted)}
+.clock{text-align:right;line-height:1.2}
+.clock span{display:block;font-size:.8rem;color:var(--muted)}
+.clock b{font-family:'Baloo 2',sans-serif;font-size:1.15rem}
+
+main{max-width:560px;margin:0 auto;padding:16px 18px}
+.tab{display:none}.tab.on{display:block}
+h2.sec{font-size:1.25rem;margin:26px 0 10px}
+
+.ringbox{display:flex;flex-direction:column;align-items:center;padding:6px 0 0}
+.ring{position:relative;width:min(78vw,260px);aspect-ratio:1}
+.ring svg{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 14px rgba(20,40,28,.18))}
+.ring .prog{transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)}
+.rc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.rc .big{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:clamp(2.4rem,11vw,3.2rem);line-height:1}
+.rc .of{font-size:.9rem;color:var(--muted)}
+.katoris{display:flex;gap:14px;margin-top:-18px;position:relative}
+.katori{width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 40% 32%,var(--steel-hi),var(--steel-lo));display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(20,40,28,.16)}
+.katori div{width:62px;height:62px;border-radius:50%;background:var(--plate);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05}
+.katori b{font-family:'Baloo 2',sans-serif;font-size:1.05rem}
+.katori small{font-size:.68rem;color:var(--muted)}
+.rem{text-align:center;margin:14px 0 0;font-weight:600}
+.rem.over{color:var(--chili)}
+.warn{background:color-mix(in srgb,var(--haldi) 16%,var(--surface));border-left:4px solid var(--haldi);padding:10px 12px;border-radius:8px;font-size:.9rem;margin:10px 0}
+
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.actions .primary{grid-column:1/-1;font-size:1.1rem;padding:15px}
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center}
+.btn.primary{background:var(--leaf-deep);border-color:var(--leaf-deep);color:#fff}
+:root[data-theme="dark"] .btn.primary{color:#0F1813}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{color:#0F1813}}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--chili);border-color:color-mix(in srgb,var(--chili) 40%,var(--line))}
+.btn:disabled{opacity:.45}
+.btn.full{width:100%;margin-top:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.row .btn{flex:1}
+
+.empty{color:var(--muted);text-align:center;padding:18px 8px;margin:0}
+.meal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 14px 8px;margin-bottom:12px}
+.mh{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 6px;border-bottom:1px dashed var(--line)}
+.mh h3{font-size:1.05rem}.mh span{font-weight:600;color:var(--leaf)}
+.ent{display:grid;grid-template-columns:62px 1fr auto 32px;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.ent:last-child{border-bottom:0}
+.ent time{font-size:.8rem;color:var(--muted)}
+.en b{display:block;font-weight:600;line-height:1.25}.en small{color:var(--muted);font-size:.8rem}
+.ec{font-family:'Baloo 2',sans-serif;font-weight:700}
+.del{border:0;background:transparent;font-size:1.3rem;color:var(--muted);cursor:pointer;width:32px;height:32px;border-radius:50%}
+
+.chart{width:100%;height:auto;display:block;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 4px 0}
+.chart .bar{cursor:pointer}
+.chart .cl{fill:var(--muted);font-size:10px}.chart .cl.on{fill:var(--ink);font-weight:700}
+.chart .cv{fill:var(--ink);font-size:9.5px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.stat{background:var(--chip);border-radius:12px;padding:10px 12px}
+.stat b{font-family:'Baloo 2',sans-serif;font-size:1.35rem;display:block;line-height:1.1}
+.stat span{font-size:.82rem;color:var(--muted)}
+.dayhead{display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 10px}
+.dayhead h3{font-size:1.1rem}
+
+.field{display:flex;flex-direction:column;gap:4px;font-size:.88rem;font-weight:500;color:var(--muted);margin-top:10px}
+.field input,.field select{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;font-size:1rem;color:var(--ink);width:100%;min-width:0}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 12px}.grid2>*{min-width:0}.grid2 .full{grid-column:1/-1}
+.calcout{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.calcout p{margin:2px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h3{font-size:1.05rem;margin-bottom:2px}.card p{margin:0;color:var(--muted);font-size:.93rem}
+.ver{text-align:center;color:var(--muted);font-size:.8rem;margin-top:26px}
+
+.sug{border-left:4px solid var(--leaf);background:var(--surface);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.sug b{display:block}.sug span{color:var(--muted);font-size:.92rem}
+.sug.alert{border-left-color:var(--chili)}
+.pslot{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:10px}
+.ph{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:baseline}
+.ph time{font-size:.8rem;color:var(--muted);min-width:66px}.ph h3{font-size:1.02rem}.ph span{font-weight:600;color:var(--leaf)}
+.pslot ul{list-style:none;margin:6px 0 0;padding:0}
+.pslot li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px dashed var(--line);font-size:.95rem}
+.pslot li small{color:var(--muted)}
+.ptot{text-align:right;font-weight:700;margin:4px 2px 8px}
+.disc{font-size:.8rem;color:var(--muted);margin-top:18px}
+.tips{margin:6px 0 0;padding-left:20px}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabs button{border:0;background:transparent;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:.78rem;color:var(--muted);cursor:pointer;border-radius:10px}
+.tabs button .ic{font-size:1.25rem;line-height:1.2}
+.tabs button.on{color:var(--leaf-deep);font-weight:600;background:var(--chip)}
+
+.sheet-wrap{position:fixed;inset:0;z-index:20;background:rgba(10,20,14,.5);display:flex;align-items:flex-end;justify-content:center}
+.sheet-wrap[hidden]{display:none}
+.sheet{position:relative;width:100%;max-width:560px;max-height:88%;overflow-y:auto;background:var(--bg);border-radius:20px 20px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px));animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.sheet h3{font-size:1.25rem;margin:4px 40px 10px 0}
+.x{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:1.3rem;cursor:pointer;z-index:2}
+.thumb{width:84px;height:84px;object-fit:cover;border-radius:12px;border:1px solid var(--line);flex:none}
+.thumb.big{width:100%;height:170px;margin-bottom:12px}
+.scanhead{display:flex;gap:14px;align-items:center}
+.loader{height:6px;border-radius:3px;background:var(--track);overflow:hidden;margin-top:10px;width:160px}
+.loader::after{content:"";display:block;height:100%;width:40%;background:var(--leaf);border-radius:3px;animation:ld 1.1s ease-in-out infinite}
+@keyframes ld{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+.item{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.item.off{opacity:.45}
+.chk{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.chk input{width:20px;height:20px;margin-top:3px;accent-color:var(--leaf);flex:none}
+.chk b{display:block;line-height:1.25}.chk small{color:var(--muted);font-size:.8rem}
+.step{display:flex;align-items:center;gap:4px}
+.step button{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:var(--bg);font-size:1.1rem;cursor:pointer}
+.step span{min-width:34px;text-align:center;font-weight:600;font-size:.9rem}
+.kc{font-family:'Baloo 2',sans-serif;font-weight:700;text-align:right;line-height:1}
+.kc small{display:block;font-family:'Hind',sans-serif;font-weight:400;font-size:.7rem;color:var(--muted)}
+.ptotal{display:flex;justify-content:space-between;align-items:baseline;padding:8px 4px;font-size:1.1rem}
+.ptotal b{font-family:'Baloo 2',sans-serif;font-size:1.5rem;color:var(--leaf-deep)}
+.note{background:var(--chip);border-radius:10px;padding:10px 12px;font-size:.93rem;margin:4px 0 6px}
+.search{width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;font-size:1rem}
+.flist{margin-top:10px;max-height:44vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.frow{display:flex;justify-content:space-between;gap:10px;width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;padding:11px 14px;text-align:left;cursor:pointer}
+.frow:last-child{border-bottom:0}.frow small{color:var(--muted)}
+details.custom{margin-top:12px}
+details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
+.err{color:var(--chili);font-weight:600}
+.nut{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 14px}
+.nr{padding:9px 0;border-bottom:1px solid var(--line)}
+.nr:last-child{border-bottom:0}
+.nt{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.nt b{font-weight:600}.nt span{font-size:.85rem;color:var(--muted);text-align:right}
+.nt span em{font-style:normal;font-weight:600;color:var(--ink)}
+.nbw{display:flex;align-items:center;gap:10px;margin-top:5px}
+.nb{flex:1;height:8px;border-radius:4px;background:var(--track);overflow:hidden}
+.nb i{display:block;height:100%;border-radius:4px}
+.np{font-size:.78rem;min-width:88px;text-align:right;color:var(--muted)}
+.np.bad{color:var(--chili);font-weight:600}.np.ok{color:var(--leaf);font-weight:600}
+.nnote{font-size:.8rem;color:var(--muted);margin:8px 2px 0}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 8px}
+.mini div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 8px;line-height:1.2}
+.mini b{display:block;font-size:.92rem}.mini span{font-size:.72rem;color:var(--muted)}
+.needs{width:100%;border-collapse:collapse;margin-top:8px;font-size:.9rem}
+.needs td{padding:5px 0;border-top:1px dashed var(--line)}.needs td:last-child{text-align:right;font-weight:600}
+
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:24px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:30;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div>
+    <h1>Calorie Diagnosis</h1>
+    <p class="sub">Khana scan karo, calorie jaano</p>
+  </div>
+  <div class="clock"><span id="clkDay"></span><b id="clkTime"></b></div>
+</header>
+
+<main>
+  <section id="t-today" class="tab on" aria-label="Aaj">
+    <div id="nudge"></div>
+    <div class="ringbox">
+      <div class="ring" id="ring" role="img"></div>
+      <div class="katoris" id="katoris"></div>
+    </div>
+    <p class="rem" id="remText"></p>
+    <div class="actions">
+      <button class="btn primary" id="bCam">📷 Photo khicho</button>
+      <button class="btn" id="bGal">🖼️ Gallery / Screenshot</button>
+      <button class="btn ghost" id="bMan">✍️ Khud likho</button>
+    </div>
+    <h2 class="sec">Aaj ka poshan</h2>
+    <p class="muted small" style="margin:-6px 0 10px">Roz ki zaroorat vs aaj kitna khaya</p>
+    <div id="todayNut"></div>
+    <h2 class="sec">Aaj ka khana</h2>
+    <div id="todayList"></div>
+  </section>
+
+  <section id="t-hist" class="tab" aria-label="History">
+    <h2 class="sec" style="margin-top:4px">Pichle 7 din</h2>
+    <div id="chart"></div>
+    <div class="stats" id="hStats"></div>
+    <label class="field">Koi bhi din dekho<input type="date" id="hDate"></label>
+    <div class="dayhead"><h3 id="hTitle"></h3><span id="hTot" class="muted"></span></div>
+    <div id="hList"></div>
+    <h2 class="sec">Us din ka poshan</h2>
+    <div id="hNut"></div>
+  </section>
+
+  <section id="t-diet" class="tab" aria-label="Diet">
+    <h2 class="sec" style="margin-top:4px">Aaj ke suggestions</h2>
+    <div id="sugg"></div>
+    <h2 class="sec">Diet chart</h2>
+    <p id="planMeta" class="muted" style="margin:0 0 10px"></p>
+    <div id="plan"></div>
+    <button class="btn primary full" id="bAiPlan">🤖 AI se meri diet chart banao</button>
+    <div id="aiPlan" style="margin-top:14px"></div>
+    <p class="disc">Ye app calorie ka andaza deta hai, medical salah nahi. Diabetes, BP, thyroid, pregnancy ya koi bimari ho to diet badalne se pehle doctor / dietitian se baat karo.</p>
+  </section>
+
+  <section id="t-set" class="tab" aria-label="Settings">
+    <h2 class="sec" style="margin-top:4px">Meri profile</h2>
+    <div class="grid2">
+      <label class="field full">Naam<input id="pName" autocomplete="name"></label>
+      <label class="field">Umar (saal)<input id="pAge" type="number" inputmode="numeric" min="10" max="100"></label>
+      <label class="field">Gender<select id="pGender"><option value="m">Purush</option><option value="f">Mahila</option></select></label>
+      <label class="field">Height (cm)<input id="pH" type="number" inputmode="decimal" min="100" max="230"></label>
+      <label class="field">Wazan (kg)<input id="pW" type="number" inputmode="decimal" min="25" max="250"></label>
+      <label class="field full">Roz ki activity<select id="pAct">
+        <option value="1.2">Baithe-baithe kaam (dukaan / desk)</option>
+        <option value="1.375">Thoda active (roz halka walk)</option>
+        <option value="1.55">Active (roz exercise)</option>
+        <option value="1.725">Bahut active (bhaari mehnat)</option>
+      </select></label>
+      <label class="field">Goal<select id="pGoal">
+        <option value="lose">Wazan kam karna</option>
+        <option value="keep">Wazan same rakhna</option>
+        <option value="gain">Wazan badhana</option>
+      </select></label>
+      <label class="field">Khana<select id="pDiet">
+        <option value="veg">Shakahari</option>
+        <option value="jain">Jain</option>
+        <option value="egg">Veg + anda</option>
+        <option value="nonveg">Non-veg</option>
+      </select></label>
+      <label class="field full">Apna target (optional, kcal)<input id="pCustom" type="number" inputmode="numeric" placeholder="Khaali chhodo to auto banega"></label>
+    </div>
+    <button class="btn primary full" id="bSaveP">Profile save karo</button>
+    <div id="calcOut" class="calcout" hidden></div>
+
+    <h2 class="sec">AI scan setting</h2>
+    <label class="field">AI provider<select id="aProv">
+      <option value="gemini">Google Gemini (free key milti hai)</option>
+      <option value="claude">Anthropic Claude</option>
+    </select></label>
+    <div id="gBox">
+      <label class="field">Gemini API key<input id="aGKey" type="password" autocomplete="off" spellcheck="false"></label>
+      <label class="field">Gemini model<input id="aGModel" spellcheck="false"></label>
+      <p class="muted small">Free key: aistudio.google.com par jao, "Get API key" dabao, copy karke yahan daalo.</p>
+    </div>
+    <div id="cBox" hidden>
+      <label class="field">Claude API key<input id="aCKey" type="password" autocomplete="off" spellcheck="false"></label>
+      <label class="field">Claude model<input id="aCModel" spellcheck="false"></label>
+      <p class="muted small">Key: console.anthropic.com se banao (paid, credits chahiye).</p>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="bSaveA">AI setting save karo</button>
+      <button class="btn" id="bTestA">Test karo</button>
+    </div>
+    <p class="muted small">Key sirf is phone ke browser mein save hoti hai, kahin aur nahi jaati.</p>
+
+    <h2 class="sec">Backup</h2>
+    <div class="row">
+      <button class="btn" id="bExp">⬇️ Backup download</button>
+      <label class="btn">⬆️ Backup restore<input type="file" id="fImp" accept="application/json,.json" hidden></label>
+    </div>
+    <button class="btn danger full" id="bClr">Saari diary mitao</button>
+    <p class="ver">Calorie Diagnosis v1.01, Ankush New Vision</p>
+  </section>
+</main>
+
+<nav class="tabs" aria-label="Menu">
+  <button data-tab="t-today" class="on"><span class="ic">🍽️</span>Aaj</button>
+  <button data-tab="t-hist"><span class="ic">📅</span>History</button>
+  <button data-tab="t-diet"><span class="ic">🥗</span>Diet</button>
+  <button data-tab="t-set"><span class="ic">⚙️</span>Settings</button>
+</nav>
+
+<div id="sheetWrap" class="sheet-wrap" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Khana jodo">
+    <button class="x" id="sheetX" aria-label="Band karo">×</button>
+    <div id="sheetBody"></div>
+  </div>
+</div>
+<div id="toast" class="toast" role="status"></div>
+
+<input type="file" id="fCam" accept="image/*" capture="environment" hidden>
+<input type="file" id="fGal" accept="image/*" hidden>
+
+<script>
+'use strict';
+const VERSION = '1.01';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2, '0');
+const r1 = n => Math.round((+n || 0) * 10) / 10;
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const dayKey = d => { d = new Date(d); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+const localDT = d => dayKey(d) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+const fmtTime = ts => new Date(ts).toLocaleTimeString('en-IN', {hour: 'numeric', minute: '2-digit'});
+const DAYS = ['Ravi', 'Som', 'Mangal', 'Budh', 'Guru', 'Shukra', 'Shani'];
+const DAYS_FULL = ['Raviwar', 'Somwar', 'Mangalwar', 'Budhwar', 'Guruwar', 'Shukrawar', 'Shaniwar'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const fmtDay = k => { const [y, m, d] = k.split('-').map(Number); const dt = new Date(y, m - 1, d); return DAYS_FULL[dt.getDay()] + ', ' + d + ' ' + MONTHS[m - 1] + ' ' + y; };
+const MEALS = [['nashta', 'Nashta'], ['lunch', 'Lunch'], ['snack', 'Shaam ka snack'], ['dinner', 'Dinner']];
+const mealFromTime = h => h < 11 ? 'nashta' : h < 16 ? 'lunch' : h < 19 ? 'snack' : 'dinner';
+
+/* ---------- storage ---------- */
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { toast('Storage full hai — backup lekar purani diary mitao'); return false; } }
+};
+let profile = LS.get('cd_profile', null);
+let api = Object.assign({provider: 'gemini', geminiKey: '', claudeKey: '', geminiModel: 'gemini-2.5-flash', claudeModel: 'claude-sonnet-5'}, LS.get('cd_api', {}));
+let entries = LS.get('cd_entries', []);
+let aiChart = LS.get('cd_aichart', null);
+let pending = null;
+let histSel = dayKey(Date.now());
+const saveEntries = () => LS.set('cd_entries', entries);
+
+/* ---------- offline food list ----------
+   name, portion, kcal, protein g, carbs g, fat g, sodium mg, magnesium mg, potassium mg, zinc mg, vitamin D mcg, vitamin C mg
+   (ghar ki normal recipe, namak ke saath — andaza) */
+const FOOD = [
+  ['Roti / Chapati','1 medium',110,3,18,3, 60,55,120,0.9,0,0],
+  ['Phulka (bina ghee)','1 pc',80,3,15,1, 40,45,100,0.7,0,0],
+  ['Paratha (plain)','1 pc',200,4,26,9, 180,55,130,0.9,0,0],
+  ['Aloo paratha','1 pc',290,6,38,13, 350,65,350,1,0,6],
+  ['Methi thepla','1 pc',120,3,15,5, 200,50,150,0.8,0,3],
+  ['Chawal (cooked)','1 katori 150g',195,4,42,0.5, 5,20,50,0.9,0,0],
+  ['Jeera rice','1 katori',230,4,40,6, 300,25,70,0.9,0,0],
+  ['Dal tadka','1 katori',150,9,20,4, 450,45,350,1.2,0,3],
+  ['Moong dal','1 katori',120,8,18,2, 400,50,330,1,0,2],
+  ['Rajma','1 katori',210,10,30,5, 500,60,500,1.4,0,3],
+  ['Chole','1 katori',240,10,32,8, 550,55,400,1.5,0,4],
+  ['Kadhi','1 katori',160,6,14,9, 500,25,250,0.6,0.1,1],
+  ['Paneer sabzi','1 katori',280,13,10,21, 550,30,250,1.5,0.1,8],
+  ['Palak sabzi','1 katori',110,4,8,7, 350,80,450,0.8,0,20],
+  ['Mix veg sabzi','1 katori',130,4,15,6, 400,30,350,0.6,0,20],
+  ['Aloo sabzi','1 katori',170,3,24,7, 400,30,500,0.4,0,12],
+  ['Bhindi sabzi','1 katori',130,3,12,8, 350,50,350,0.6,0,15],
+  ['Lauki / tori sabzi','1 katori',90,2,10,5, 350,20,250,0.3,0,8],
+  ['Khichdi','1 plate',300,11,50,6, 600,70,400,1.8,0,2],
+  ['Poha','1 plate',250,5,42,7, 450,25,150,0.6,0,5],
+  ['Upma','1 plate',240,6,35,8, 500,30,150,0.7,0,3],
+  ['Sabudana khichdi','1 plate',480,4,70,20, 500,40,300,0.8,0,4],
+  ['Idli','1 pc',60,2,12,0.4, 150,10,40,0.3,0,0],
+  ['Dosa (plain)','1 pc',170,4,28,5, 300,20,80,0.5,0,0],
+  ['Masala dosa','1 pc',350,7,50,13, 550,35,350,0.8,0,8],
+  ['Sambar','1 katori',130,6,18,4, 450,35,300,0.6,0,8],
+  ['Dhokla','2 pc',160,6,22,5, 450,25,150,0.6,0,1],
+  ['Dahi','1 katori',100,5,6,6, 70,18,230,0.9,0.1,1],
+  ['Paneer (kaccha)','50 g',130,9,2,10, 10,4,50,1.4,0.1,0],
+  ['Chaas','1 glass',40,2,4,1.5, 300,10,150,0.4,0,1],
+  ['Doodh (toned)','1 glass 250ml',150,8,12,8, 110,28,380,1,0.3,0],
+  ['Chai (cheeni wali)','1 cup',90,3,12,3, 30,10,120,0.3,0.1,0],
+  ['Coffee (doodh-cheeni)','1 cup',100,3,13,3.5, 35,15,160,0.3,0.1,0],
+  ['Samosa','1 pc',260,4,28,15, 420,25,250,0.5,0,5],
+  ['Kachori','1 pc',280,5,30,16, 450,30,200,0.6,0,1],
+  ['Vada pav','1 pc',290,6,40,12, 650,30,350,0.7,0,5],
+  ['Pav bhaji','1 plate',450,10,58,20, 1000,50,650,1.3,0,25],
+  ['Pani puri','6 pc',200,4,30,8, 550,20,200,0.5,0,3],
+  ['Bhel puri','1 plate',250,6,38,8, 600,40,250,0.8,0,6],
+  ['Namkeen / mixture','30 g',160,4,14,10, 300,35,150,0.8,0,0],
+  ['Biscuit (Marie)','4 pc',110,2,20,3, 100,5,30,0.1,0,0],
+  ['Maggi','1 pack',350,8,48,14, 1400,25,150,0.6,0,0],
+  ['Veg sandwich','1 pc',250,7,34,9, 550,25,250,0.7,0,10],
+  ['Pizza','1 slice',280,11,32,12, 600,25,200,1.3,0.1,2],
+  ['Cold drink','300 ml',130,0,33,0, 30,0,5,0,0,0],
+  ['Nimbu paani (cheeni-namak)','1 glass',60,0,15,0, 200,3,50,0,0,15],
+  ['Nariyal paani','1 glass',45,1.7,9,0.5, 250,60,600,0.2,0,6],
+  ['Gulab jamun','1 pc',150,2,22,6, 40,6,50,0.2,0,0],
+  ['Jalebi','2 pc',300,2,44,13, 20,5,20,0.1,0,0],
+  ['Besan ladoo','1 pc',180,4,20,10, 10,25,150,0.6,0,0],
+  ['Kela (banana)','1 pc',105,1,27,0.4, 1,32,420,0.2,0,10],
+  ['Seb (apple)','1 pc',95,0.5,25,0.3, 2,9,195,0.1,0,8],
+  ['Aam (mango)','1 medium',150,1,38,0.6, 2,20,330,0.2,0,55],
+  ['Papita','1 katori',60,1,15,0.2, 10,30,250,0.1,0,85],
+  ['Santra (orange)','1 pc',60,1,15,0.2, 0,13,230,0.1,0,70],
+  ['Amrood (guava)','1 pc',68,2.5,14,1, 2,22,420,0.2,0,200],
+  ['Amla','1 pc',15,0.3,3,0.1, 1,3,60,0,0,130],
+  ['Sprouts','1 katori',100,7,16,1, 10,20,150,0.4,0,13],
+  ['Bhuna chana','30 g',110,6,18,2, 10,45,250,0.9,0,0],
+  ['Moongfali','30 g',170,7,5,14, 5,50,210,1,0,0],
+  ['Badam','10 pc',70,2.5,2.5,6, 0,33,85,0.4,0,0],
+  ['Kaddu ke beej','1 chammach 10g',56,3,1,5, 1,55,80,0.8,0,0],
+  ['Makhana (bhuna)','1 katori 25g',90,2.5,19,0.3, 0,50,130,0.3,0,0],
+  ['Salad (kakdi-tamatar)','1 plate',50,2,10,0.5, 10,20,300,0.3,0,15],
+  ['Anda (boiled)','1 pc',78,6,0.6,5, 62,5,63,0.5,1.1,0],
+  ['Omelette','2 egg',190,13,2,14, 350,12,140,1.1,2.2,0],
+  ['Chicken curry','1 katori',280,25,8,16, 550,30,350,2,0.2,4],
+  ['Fish curry','1 katori',240,22,6,14, 500,35,400,0.7,5,3]
+];
+
+/* ---------- diet chart templates: fixed items + one "flex" item that fills the calories ---------- */
+const PLAN = {
+  veg: {name: 'Shakahari', note: '', slots: [
+    {t:'7:30 AM', title:'Nashta', pct:.25, fixed:[['Doodh / chai (kam cheeni)','1 cup',90]], flex:['Thepla / paratha (kam tel)','pc',120]},
+    {t:'11:00 AM', title:'Beech mein', pct:.10, fixed:[], flex:['Fal (seb / kela / papita)','serving',90]},
+    {t:'1:30 PM', title:'Lunch', pct:.30, fixed:[['Dal','1 katori',150],['Hari sabzi','1 katori',130],['Salad','1 plate',50],['Dahi','1 katori',100]], flex:['Roti','pc',110]},
+    {t:'5:00 PM', title:'Shaam ka snack', pct:.10, fixed:[['Chaas / green tea','1 glass',40]], flex:['Sprouts / bhuna chana','katori',100]},
+    {t:'8:00 PM', title:'Dinner', pct:.25, fixed:[['Dal / kadhi','1 katori',150],['Sabzi','1 katori',130]], flex:['Roti','pc',110]}]},
+  jain: {name: 'Jain', note: 'Jain: pyaz, lahsun, aloo, gajar jaise zameen-kand nahi. Dinner suryast se pehle.', slots: [
+    {t:'7:30 AM', title:'Nashta', pct:.25, fixed:[['Doodh (kam cheeni)','1 cup',100]], flex:['Methi thepla','pc',120]},
+    {t:'11:00 AM', title:'Beech mein', pct:.10, fixed:[], flex:['Fal (seb / papita / anaar)','serving',90]},
+    {t:'12:30 PM', title:'Lunch', pct:.32, fixed:[['Moong / tuar dal','1 katori',140],['Lauki / tori / bhindi sabzi','1 katori',120],['Kakdi salad','1 plate',40],['Dahi','1 katori',100]], flex:['Roti','pc',110]},
+    {t:'4:00 PM', title:'Snack', pct:.10, fixed:[['Chaas','1 glass',40]], flex:['Bhuna makhana / chana','katori',90]},
+    {t:'5:45 PM', title:'Dinner (suryast se pehle)', pct:.23, fixed:[['Moong dal / kadhi','1 katori',140],['Hari sabzi (bina kand)','1 katori',120]], flex:['Phulka','pc',80]}]},
+  egg: {name: 'Veg + anda', note: '', slots: [
+    {t:'7:30 AM', title:'Nashta', pct:.25, fixed:[['Boiled anda','2 pc',156],['Chai (kam cheeni)','1 cup',60]], flex:['Roti / brown bread','pc',70]},
+    {t:'11:00 AM', title:'Beech mein', pct:.10, fixed:[], flex:['Fal','serving',90]},
+    {t:'1:30 PM', title:'Lunch', pct:.30, fixed:[['Dal','1 katori',150],['Hari sabzi','1 katori',130],['Salad','1 plate',50],['Dahi','1 katori',100]], flex:['Roti','pc',110]},
+    {t:'5:00 PM', title:'Shaam ka snack', pct:.10, fixed:[['Chaas / green tea','1 glass',40]], flex:['Sprouts','katori',100]},
+    {t:'8:00 PM', title:'Dinner', pct:.25, fixed:[['Anda bhurji / egg curry','2 egg',200],['Sabzi','1 katori',130]], flex:['Roti','pc',110]}]},
+  nonveg: {name: 'Non-veg', note: '', slots: [
+    {t:'7:30 AM', title:'Nashta', pct:.25, fixed:[['Omelette','2 egg',190]], flex:['Roti / brown bread','pc',70]},
+    {t:'11:00 AM', title:'Beech mein', pct:.10, fixed:[], flex:['Fal','serving',90]},
+    {t:'1:30 PM', title:'Lunch', pct:.30, fixed:[['Chicken / fish curry','1 katori',260],['Salad','1 plate',50],['Dahi','1 katori',100]], flex:['Roti','pc',110]},
+    {t:'5:00 PM', title:'Shaam ka snack', pct:.10, fixed:[['Chaas / green tea','1 glass',40]], flex:['Bhuna chana','katori',110]},
+    {t:'8:00 PM', title:'Dinner', pct:.25, fixed:[['Dal','1 katori',150],['Sabzi','1 katori',130]], flex:['Roti','pc',110]}]}
+};
+
+/* ---------- target calculation (Mifflin-St Jeor) ---------- */
+function calc() {
+  if (!profile) return {bmr: 0, tdee: 0, target: 2000, protein: 55, warn: ''};
+  const {age, gender, height, weight, activity, goal, customTarget} = profile;
+  const bmr = 10 * weight + 6.25 * height - 5 * age + (gender === 'm' ? 5 : -161);
+  const tdee = bmr * activity;
+  let t = customTarget ? customTarget : tdee + (goal === 'lose' ? -500 : goal === 'gain' ? 300 : 0);
+  const floor = gender === 'm' ? 1500 : 1200;
+  let warn = '';
+  if (t < floor) { t = floor; warn = `Target ${floor} kcal se neeche nahi rakha. Isse kam khana doctor ya dietitian ki salah ke bina safe nahi hai.`; }
+  return {bmr: Math.round(bmr), tdee: Math.round(tdee), target: Math.round(t / 10) * 10, protein: Math.round(weight * 0.9), warn};
+}
+/* ---------- poshan (nutrients) ---------- */
+const KEYS = ['cal', 'p', 'c', 'f', 'na', 'mg', 'kp', 'zn', 'vd', 'vc'];
+const MICRO = ['na', 'mg', 'kp', 'zn', 'vd', 'vc'];
+const NUT = [
+  {k: 'cal', name: 'Calorie', unit: 'kcal', type: 'max'},
+  {k: 'p', name: 'Protein', unit: 'g', type: 'min'},
+  {k: 'c', name: 'Carbs', unit: 'g', type: 'max'},
+  {k: 'f', name: 'Fat', unit: 'g', type: 'max'},
+  {k: 'na', name: 'Sodium (namak)', unit: 'mg', type: 'max'},
+  {k: 'mg', name: 'Magnesium', unit: 'mg', type: 'min'},
+  {k: 'kp', name: 'Potassium', unit: 'mg', type: 'min'},
+  {k: 'zn', name: 'Zinc', unit: 'mg', type: 'min'},
+  {k: 'vd', name: 'Vitamin D', unit: 'mcg', type: 'min'},
+  {k: 'vc', name: 'Vitamin C', unit: 'mg', type: 'min'}
+];
+/* Roz ki zaroorat: ICMR-NIN 2020 (adult) ke aas-paas; sodium = WHO limit */
+function needs() {
+  const c = calc(), m = !profile || profile.gender === 'm', age = (profile && profile.age) || 30;
+  return {cal: c.target, p: c.protein, c: Math.round(c.target * .55 / 4), f: Math.round(c.target * .30 / 9),
+    na: 2000, mg: m ? 440 : 370, kp: 3500, zn: m ? 17 : 13.2, vd: age > 70 ? 20 : 15, vc: m ? 80 : 65};
+}
+const nfmt = (v, k) => (k === 'zn' || k === 'vd') ? r1(v) : Math.round(v);
+function nutHTML(t, list) {
+  const n = needs();
+  const rows = NUT.map(d => {
+    const v = t[d.k] || 0, need = n[d.k], pct = need ? v / need * 100 : 0;
+    let col = 'var(--leaf)', cls = '', txt = Math.round(pct) + '%';
+    if (d.type === 'max') {
+      if (pct > 100) { col = 'var(--chili)'; cls = 'bad'; txt = Math.round(pct) + '%, zyada'; }
+      else if (pct > 85) col = 'var(--haldi)';
+    } else {
+      if (pct >= 100) { cls = 'ok'; txt = 'Poora ✓'; }
+      else { col = pct < 40 ? 'var(--haldi)' : 'var(--leaf)'; txt = Math.round(pct) + '%, ' + nfmt(need - v, d.k) + ' baaki'; }
+    }
+    return `<div class="nr"><div class="nt"><b>${d.name}</b><span><em>${nfmt(v, d.k)}</em> / ${nfmt(need, d.k)} ${d.unit}${d.type === 'max' ? ' tak' : ''}</span></div>
+      <div class="nbw"><div class="nb"><i style="width:${Math.min(pct, 100)}%;background:${col}"></i></div><span class="np ${cls}">${txt}</span></div></div>`;
+  }).join('');
+  const old = (list || []).some(e => e.na === undefined);
+  return `<div class="nut">${rows}</div>
+    <p class="nnote">Vitamin D zyada tar subah ki dhoop (15–20 min) se banta hai, khane se kam milta hai. Sab numbers andaza hain.${old ? ' Kuch purani entries mein minerals/vitamins ka data nahi hai.' : ''}</p>`;
+}
+const dayEntries = k => entries.filter(e => dayKey(e.ts) === k).sort((a, b) => a.ts - b.ts);
+const sum = list => list.reduce((s, e) => { KEYS.forEach(k => { s[k] += +e[k] || 0; }); return s; }, Object.fromEntries(KEYS.map(k => [k, 0])));
+
+/* ---------- UI helpers ---------- */
+let toastT;
+function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600); }
+function openSheet(html) { $('#sheetBody').innerHTML = html; $('#sheetWrap').hidden = false; document.body.style.overflow = 'hidden'; }
+function closeSheet() { $('#sheetWrap').hidden = true; document.body.style.overflow = ''; pending = null; }
+function goTab(id) {
+  document.querySelectorAll('.tab').forEach(s => s.classList.toggle('on', s.id === id));
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id));
+  window.scrollTo(0, 0);
+  if (id === 't-hist') renderHistory();
+  if (id === 't-diet') renderDiet();
+}
+function tick() {
+  const d = new Date();
+  $('#clkDay').textContent = DAYS_FULL[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+  $('#clkTime').textContent = d.toLocaleTimeString('en-IN', {hour: 'numeric', minute: '2-digit'});
+}
+
+/* ---------- AAJ ---------- */
+function ringSVG(eaten, target) {
+  const r = 90, C = 2 * Math.PI * r, frac = Math.min(eaten / target, 1);
+  const col = eaten > target ? 'var(--chili)' : frac > .85 ? 'var(--haldi)' : 'var(--leaf)';
+  return `<svg viewBox="0 0 220 220" aria-hidden="true">
+    <defs><radialGradient id="steel" cx="38%" cy="30%" r="80%"><stop offset="0" style="stop-color:var(--steel-hi)"/><stop offset="1" style="stop-color:var(--steel-lo)"/></radialGradient></defs>
+    <circle cx="110" cy="110" r="106" style="fill:url(#steel)"/>
+    <circle cx="110" cy="110" r="${r}" style="fill:none;stroke:var(--track);stroke-width:12"/>
+    <circle class="prog" cx="110" cy="110" r="${r}" transform="rotate(-90 110 110)" style="fill:none;stroke:${col};stroke-width:12;stroke-linecap:round;stroke-dasharray:${C};stroke-dashoffset:${C * (1 - frac)}"/>
+    <circle cx="110" cy="110" r="77" style="fill:var(--plate)"/>
+  </svg>`;
+}
+function renderToday() {
+  const c = calc(), t = sum(dayEntries(dayKey(Date.now())));
+  const eaten = Math.round(t.cal), rem = c.target - eaten;
+  $('#nudge').innerHTML = !profile
+    ? `<div class="card"><h3>Pehle apni profile bharo</h3><p>Umar, height aur wazan se aapka sahi calorie target banega. Abhi 2000 kcal maan ke chal rahe hain.</p><button class="btn primary full" data-go="t-set">Profile bharo</button></div>`
+    : (c.warn ? `<div class="warn">${c.warn}</div>` : '');
+  $('#ring').innerHTML = ringSVG(eaten, c.target) +
+    `<div class="rc"><span class="big">${eaten}</span><span class="of">/ ${c.target} kcal khaya</span></div>`;
+  $('#ring').setAttribute('aria-label', `Aaj ${eaten} kcal khaya, target ${c.target}`);
+  $('#katoris').innerHTML = [['Protein', t.p, c.protein], ['Carbs', t.c, 0], ['Fat', t.f, 0]]
+    .map(([l, v, goal]) => `<div class="katori"><div><b>${Math.round(v)}g</b><small>${l}${goal ? ' /' + goal : ''}</small></div></div>`).join('');
+  const rt = $('#remText');
+  rt.className = 'rem' + (rem < 0 ? ' over' : '');
+  rt.textContent = eaten === 0 ? 'Aaj abhi tak kuch nahi joda' : rem >= 0 ? `Aaj ${rem} kcal aur kha sakte ho` : `Target se ${-rem} kcal zyada ho gaya`;
+  $('#todayList').innerHTML = listHTML(dayKey(Date.now()));
+  $('#todayNut').innerHTML = nutHTML(t, dayEntries(dayKey(Date.now())));
+}
+function listHTML(k) {
+  const list = dayEntries(k);
+  if (!list.length) return `<p class="empty">${k === dayKey(Date.now()) ? 'Thali ki photo khicho ya khud likho — yahan dikhega.' : 'Is din kuch nahi joda gaya.'}</p>`;
+  return MEALS.map(([id, label]) => {
+    const g = list.filter(e => e.meal === id);
+    if (!g.length) return '';
+    return `<div class="meal"><div class="mh"><h3>${label}</h3><span>${Math.round(sum(g).cal)} kcal</span></div>` +
+      g.map(e => `<div class="ent"><time>${fmtTime(e.ts)}</time><div class="en"><b>${esc(e.name)}</b><small>${esc(e.portion || '')}${e.src === 'scan' ? ' (scan)' : ''}</small></div><span class="ec">${e.cal}</span><button class="del" data-id="${e.id}" aria-label="${esc(e.name)} hatao">×</button></div>`).join('') +
+      `</div>`;
+  }).join('');
+}
+
+/* ---------- image + AI ---------- */
+function compress(file, max) {
+  return new Promise((res, rej) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      const s = Math.min(1, max / Math.max(img.width, img.height));
+      const w = Math.round(img.width * s), h = Math.round(img.height * s);
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      const url = cv.toDataURL('image/jpeg', .82);
+      URL.revokeObjectURL(u);
+      res({url, b64: url.split(',')[1]});
+    };
+    img.onerror = () => { URL.revokeObjectURL(u); rej(new Error('Photo khul nahi payi')); };
+    img.src = u;
+  });
+}
+const hasKey = () => api.provider === 'claude' ? !!api.claudeKey : !!api.geminiKey;
+async function aiCall(prompt, b64) {
+  if (!hasKey()) throw new Error('NOKEY');
+  if (api.provider === 'claude') {
+    const content = [];
+    if (b64) content.push({type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: b64}});
+    content.push({type: 'text', text: prompt});
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'content-type': 'application/json', 'x-api-key': api.claudeKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'},
+      body: JSON.stringify({model: api.claudeModel || 'claude-sonnet-5', max_tokens: 2000, messages: [{role: 'user', content}]})
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d?.error?.message || 'Claude error ' + r.status);
+    return (d.content || []).map(x => x.type === 'text' ? x.text : '').join('\n');
+  }
+  const parts = [];
+  if (b64) parts.push({inline_data: {mime_type: 'image/jpeg', data: b64}});
+  parts.push({text: prompt});
+  const m = encodeURIComponent(api.geminiModel || 'gemini-2.5-flash');
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(api.geminiKey)}`, {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({contents: [{parts}], generationConfig: {temperature: .2, responseMimeType: 'application/json'}})
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d?.error?.message || 'Gemini error ' + r.status);
+  return (d.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
+}
+function parseJSON(t) {
+  t = String(t).replace(/```json|```/g, '').trim();
+  const a = t.indexOf('{'), b = t.lastIndexOf('}');
+  if (a < 0 || b < a) throw new Error('AI ka jawab samajh nahi aaya, dobara try karo');
+  return JSON.parse(t.slice(a, b + 1));
+}
+const SCAN_PROMPT = `You are an expert nutritionist for Indian food. Look at this image. It may be a photo of a plate/thali, a single food, a packaged food with a nutrition label, a restaurant menu item, or a screenshot.
+Identify EVERY separate food or drink item visible. Include salt used in normal Indian home cooking in sodium. For each, estimate the realistic portion shown (use Indian household units like katori, pc, glass, plate, with grams) and its nutrition for that portion.
+If a nutrition label is readable, use the label values per serving and mention "label" in the portion.
+Reply with ONLY valid JSON, no markdown, in exactly this shape:
+{"is_food":true,"items":[{"name":"short Hinglish name e.g. Dal tadka","portion":"1 katori (150g)","calories":150,"protein_g":9,"carbs_g":20,"fat_g":4,"sodium_mg":450,"magnesium_mg":45,"potassium_mg":350,"zinc_mg":1.2,"vitamin_d_mcg":0,"vitamin_c_mg":3}],"health_note":"one short, kind, practical tip in Hinglish (Roman script) about this meal"}
+If there is no food or drink in the image, reply {"is_food":false,"items":[],"health_note":""}.`;
+
+function newPending(src, url) { const now = new Date(); return {items: [], note: '', url: url || '', src, meal: mealFromTime(now.getHours()), time: localDT(now)}; }
+
+async function onPick(file) {
+  if (!file) return;
+  let img;
+  try { img = await compress(file, 1024); } catch (e) { toast(e.message); return; }
+  const me = newPending('scan', img.url);
+  pending = me;
+  if (!hasKey()) {
+    openSheet(`<div class="scanhead"><img class="thumb" src="${img.url}" alt="Chuni hui photo"><div><h3>AI key nahi mili</h3><p class="muted small">Photo se calorie nikalne ke liye Settings mein Gemini (free) ya Claude ki API key daalo. Tab tak item khud chun sakte ho.</p></div></div>
+      <div class="row"><button class="btn primary" data-go="t-set">Settings kholo</button><button class="btn" id="addMore">Khud chuno</button></div>`);
+    return;
+  }
+  openSheet(`<div class="scanhead"><img class="thumb" src="${img.url}" alt="Scan ho rahi photo"><div><h3>Scan ho raha hai…</h3><p class="muted small">AI khana pehchan raha hai, 5–15 second</p><div class="loader"></div></div></div>`);
+  try {
+    const j = parseJSON(await aiCall(SCAN_PROMPT, img.b64));
+    if (pending !== me) return; // sheet band ho gayi
+    if (!j.is_food || !Array.isArray(j.items) || !j.items.length) {
+      openSheet(`<img class="thumb big" src="${img.url}" alt="Scan ki gayi photo"><h3>Is photo mein khana nahi dikha</h3><p class="muted">Thali upar se, achhi roshni mein photo lo. Ya item khud chuno.</p><div class="row"><button class="btn primary" id="retake">Dobara photo</button><button class="btn" id="addMore">Khud chuno</button></div>`);
+      return;
+    }
+    me.items = j.items.map(i => ({name: i.name || 'Item', portion: i.portion || '', cal: Math.max(0, Math.round(+i.calories || 0)), p: +i.protein_g || 0, c: +i.carbs_g || 0, f: +i.fat_g || 0,
+      na: +i.sodium_mg || 0, mg: +i.magnesium_mg || 0, kp: +i.potassium_mg || 0, zn: +i.zinc_mg || 0, vd: +i.vitamin_d_mcg || 0, vc: +i.vitamin_c_mg || 0, mult: 1, on: true}));
+    me.note = j.health_note || '';
+    drawPending();
+  } catch (e) {
+    if (pending !== me) return;
+    const msg = e.message === 'NOKEY' ? 'API key nahi mili.' : e.message;
+    openSheet(`<div class="scanhead"><img class="thumb" src="${img.url}" alt="Scan ki gayi photo"><div><h3>Scan nahi ho paya</h3><p class="err small">${esc(msg)}</p><p class="muted small">Internet, API key aur model ka naam check karo.</p></div></div><div class="row"><button class="btn primary" id="retake">Dobara photo</button><button class="btn" id="addMore">Khud chuno</button></div>`);
+  }
+}
+
+function drawPending() {
+  const on = pending.items.filter(i => i.on);
+  const tot = on.reduce((a, i) => a + i.cal * i.mult, 0);
+  const mt = k => on.reduce((a, i) => a + (+i[k] || 0) * i.mult, 0);
+  const mini = on.length ? `<div class="mini">${[['p', 'Protein', 'g'], ['c', 'Carbs', 'g'], ['f', 'Fat', 'g'], ['na', 'Sodium', 'mg'], ['mg', 'Magnesium', 'mg'], ['kp', 'Potassium', 'mg'], ['zn', 'Zinc', 'mg'], ['vd', 'Vitamin D', 'mcg'], ['vc', 'Vitamin C', 'mg']]
+    .map(([k, l, u]) => `<div><b>${nfmt(mt(k), k)} ${u}</b><span>${l}</span></div>`).join('')}</div>` : '';
+  const rows = pending.items.map((it, i) => `<div class="item ${it.on ? '' : 'off'}">
+      <label class="chk"><input type="checkbox" class="pchk" data-i="${i}" ${it.on ? 'checked' : ''}><span><b>${esc(it.name)}</b><small>${esc(it.portion)}</small></span></label>
+      <div class="step"><button class="pst" data-i="${i}" data-d="-0.5" aria-label="Portion kam">−</button><span>×${it.mult}</span><button class="pst" data-i="${i}" data-d="0.5" aria-label="Portion zyada">+</button></div>
+      <div class="kc">${Math.round(it.cal * it.mult)}<small>kcal</small></div></div>`).join('');
+  openSheet(`${pending.url ? `<img class="thumb big" src="${pending.url}" alt="Scan ki gayi photo">` : ''}
+    <h3>${pending.src === 'scan' ? 'Photo mein ye mila' : 'Chune hue item'}</h3>
+    ${rows || '<p class="empty">Abhi koi item nahi chuna.</p>'}
+    <div class="ptotal"><span>Kul</span><b>${Math.round(tot)} kcal</b></div>
+    ${mini}
+    ${pending.note ? `<p class="note">💡 ${esc(pending.note)}</p>` : ''}
+    <div class="grid2">
+      <label class="field">Meal<select id="pMeal">${MEALS.map(([v, l]) => `<option value="${v}" ${v === pending.meal ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+      <label class="field">Kab khaya<input type="datetime-local" id="pTime" value="${pending.time}"></label>
+    </div>
+    <div class="row"><button class="btn" id="addMore">+ Aur item</button><button class="btn primary" id="savePend" ${on.length ? '' : 'disabled'}>Diary mein jodo</button></div>
+    ${pending.src === 'scan' ? '<p class="muted small">Calorie AI ka andaza hai. Portion −/+ se sahi karo, galat item ka tick hatao.</p>' : ''}`);
+}
+
+function foodRows(q) {
+  q = q.trim().toLowerCase();
+  const r = FOOD.map((f, i) => [f, i]).filter(([f]) => !q || f[0].toLowerCase().includes(q));
+  return r.map(([f, i]) => `<button class="frow" data-f="${i}"><span>${f[0]} <small>${f[1]}</small></span><b>${f[2]}</b></button>`).join('') || '<p class="empty">Nahi mila — neeche apna item likho.</p>';
+}
+function drawSearch() {
+  openSheet(`<h3>Item chuno</h3>
+    <input class="search" id="sq" type="search" placeholder="Roti, dal, poha…" aria-label="Khana dhundho">
+    <div class="flist" id="flist">${foodRows('')}</div>
+    <details class="custom"><summary>List mein nahi hai? Apna item likho</summary>
+      <div class="grid2"><label class="field">Naam<input id="cName"></label><label class="field">Calorie (kcal)<input id="cCal" type="number" inputmode="numeric"></label></div>
+      <button class="btn full" id="cAdd">Item jodo</button>
+    </details>
+    ${pending.items.length ? `<button class="btn primary full" id="toPend">Chune hue ${pending.items.length} item dekho</button>` : ''}`);
+  $('#sq').addEventListener('input', e => { $('#flist').innerHTML = foodRows(e.target.value); });
+}
+function savePending() {
+  const ts = new Date(pending.time).getTime() || Date.now();
+  pending.items.filter(i => i.on).forEach(it => entries.push({
+    id: uid(), ts, meal: pending.meal, name: it.name,
+    portion: (it.mult !== 1 ? '×' + it.mult + ' ' : '') + it.portion,
+    cal: Math.round(it.cal * it.mult), p: r1(it.p * it.mult), c: r1(it.c * it.mult), f: r1(it.f * it.mult),
+    na: Math.round((it.na || 0) * it.mult), mg: Math.round((it.mg || 0) * it.mult), kp: Math.round((it.kp || 0) * it.mult),
+    zn: r1((it.zn || 0) * it.mult), vd: r1((it.vd || 0) * it.mult), vc: Math.round((it.vc || 0) * it.mult), src: pending.src
+  }));
+  saveEntries();
+  closeSheet();
+  toast('Diary mein jod diya');
+  renderAll();
+}
+
+/* ---------- HISTORY ---------- */
+function renderHistory() {
+  const c = calc();
+  const days = [...Array(7)].map((_, i) => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - (6 - i)); const k = dayKey(d); return {k, d, cal: Math.round(sum(dayEntries(k)).cal)}; });
+  const max = Math.max(c.target * 1.25, ...days.map(x => x.cal * 1.08));
+  const W = 340, H = 180, pb = 24, pt = 16, bw = 30, gap = (W - 7 * bw) / 8;
+  const y = v => pt + (H - pt - pb) * (1 - v / max);
+  const ty = y(c.target);
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Pichle 7 din ki calorie">
+    <line x1="0" x2="${W}" y1="${ty}" y2="${ty}" style="stroke:var(--haldi);stroke-width:1.5;stroke-dasharray:5 4"/><text x="4" y="${ty - 4}" class="cv">Target ${c.target}</text>`;
+  days.forEach((x, i) => {
+    const X = gap + i * (bw + gap), Y = y(x.cal), sel = x.k === histSel;
+    const col = x.cal > c.target ? 'var(--chili)' : 'var(--leaf)';
+    s += `<g class="bar" data-k="${x.k}" tabindex="0" role="button" aria-label="${fmtDay(x.k)}: ${x.cal} kcal">
+      <rect x="${X - gap / 2}" y="0" width="${bw + gap}" height="${H}" style="fill:transparent"/>
+      <rect x="${X}" y="${Y}" width="${bw}" height="${Math.max(0, H - pb - Y)}" rx="6" style="fill:${col};opacity:${sel ? 1 : .5}"/>
+      <text x="${X + bw / 2}" y="${H - 7}" text-anchor="middle" class="cl${sel ? ' on' : ''}">${DAYS[x.d.getDay()]}</text>
+      ${x.cal ? `<text x="${X + bw / 2}" y="${Y - 4}" text-anchor="middle" class="cv">${x.cal}</text>` : ''}</g>`;
+  });
+  $('#chart').innerHTML = s + '</svg>';
+  const logged = days.filter(x => x.cal > 0);
+  const avg = logged.length ? Math.round(logged.reduce((a, x) => a + x.cal, 0) / logged.length) : 0;
+  const inT = logged.filter(x => x.cal <= c.target).length;
+  $('#hStats').innerHTML = `<div class="stat"><b>${avg || '–'}</b><span>Roz ka average (kcal)</span></div><div class="stat"><b>${inT} / ${logged.length}</b><span>Din target ke andar</span></div>`;
+  $('#hDate').value = histSel;
+  $('#hDate').max = dayKey(Date.now());
+  $('#hTitle').textContent = fmtDay(histSel);
+  $('#hTot').textContent = Math.round(sum(dayEntries(histSel)).cal) + ' kcal';
+  $('#hList').innerHTML = listHTML(histSel);
+  $('#hNut').innerHTML = nutHTML(sum(dayEntries(histSel)), dayEntries(histSel));
+}
+
+/* ---------- DIET ---------- */
+function suggestions() {
+  const c = calc(), t = sum(dayEntries(dayKey(Date.now()))), h = new Date().getHours(), rem = Math.round(c.target - t.cal), out = [];
+  if (!profile) out.push(['Profile bharo', 'Umar, wazan aur height se target aur diet chart aapke hisaab se banega.', 0]);
+  if (!t.cal) out.push(['Aaj ka pehla meal scan karo', 'Thali ki photo lo — calorie apne aap jud jayegi.', 0]);
+  else if (rem < 0) out.push([`Target se ${-rem} kcal upar`, 'Koi baat nahi. Agla meal halka rakho (dal, sabzi, salad) aur 20–30 minute walk karo. Khana skip mat karo.', 1]);
+  else if (h >= 18 && rem > 500) out.push([`Dinner ke liye ~${rem} kcal bache hain`, 'Dal + 2 roti + sabzi + salad lagbhag 500 kcal hota hai — poora khana lo.', 0]);
+  else if (rem <= 250) out.push([`Sirf ${rem} kcal bache`, 'Chaas, fal ya sprouts jaisa halka option lo.', 0]);
+  else out.push([`${rem} kcal aur le sakte ho`, 'Plate mein aadha hissa sabzi-salad, ek chauthai dal/paneer, ek chauthai roti-chawal rakho.', 0]);
+  if (t.cal && h >= 15 && t.p < c.protein * .5) out.push([`Protein kam hai (${Math.round(t.p)}g / ${c.protein}g)`, 'Dal, paneer, dahi, sprouts, chana — agle meal mein jodo.', 1]);
+  if (t.cal > 400 && t.f * 9 > t.cal * .35) out.push(['Tel-ghee zyada lag raha hai', 'Aaj ki calorie ka 35% se zyada fat se aaya. Tadka kam, fried cheezein kam karo.', 1]);
+  const n = needs();
+  if (t.na > n.na) out.push([`Namak zyada: ${Math.round(t.na)} mg sodium (limit ${n.na})`, 'Achaar, papad, namkeen, Maggi aur packaged cheezein kam karo. Sabzi-dal mein upar se namak mat daalo.', 1]);
+  if (t.cal && h >= 17) {
+    const low = (k, a, b) => { if ((t[k] || 0) < n[k] * .6) out.push([a + ` kam hai (${nfmt(t[k], k)} / ${nfmt(n[k], k)})`, b, 1]); };
+    low('kp', 'Potassium', 'Kela, nariyal paani, dal, palak, dahi, amrood — kal ke khane mein jodo.');
+    low('mg', 'Magnesium', 'Moongfali, badam, kaddu ke beej, palak, sabut anaaj aur dal.');
+    low('zn', 'Zinc', 'Chana, rajma, dal, kaddu ke beej, paneer, dahi.');
+    low('vc', 'Vitamin C', 'Roz ek amla, amrood, santra ya papita — ya khane par nimbu.');
+    if ((t.vd || 0) < n.vd * .5) out.push(['Vitamin D', 'Subah 15–20 min dhoop lo (haath-chehra khule). Thakaan ya haddi mein dard rehta ho to test karwa ke doctor se poochho.', 0]);
+  }
+  const week = [...Array(7)].map((_, i) => sum(dayEntries(dayKey(Date.now() - i * 864e5))).cal).filter(x => x > 0);
+  if (week.length >= 4) {
+    const avg = Math.round(week.reduce((a, b) => a + b, 0) / week.length);
+    const hi = avg > c.target * 1.1, lo = avg < c.target * .8;
+    out.push([`Hafte ka average: ${avg} kcal`, hi ? 'Average target se upar hai — snacks aur meethe par nazar rakho.' : lo ? 'Average target se kaafi kam hai. Bahut kam khana bhi theek nahi — teeno time poora khana lo.' : 'Achha chal raha hai, aise hi rakho.', hi || lo ? 1 : 0]);
+  }
+  out.push(['Paani', 'Din mein 8–10 glass paani piyo. Kai baar pyaas bhookh jaisi lagti hai.', 0]);
+  return out;
+}
+function renderDiet() {
+  $('#sugg').innerHTML = suggestions().map(([b, s, a]) => `<div class="sug${a ? ' alert' : ''}"><b>${b}</b><span>${s}</span></div>`).join('');
+  const c = calc(), P = PLAN[(profile && profile.diet) || 'veg'];
+  $('#planMeta').textContent = `${P.name} khana, ${c.target} kcal roz ke hisaab se`;
+  let tot = 0;
+  const html = P.slots.map(s => {
+    const goal = c.target * s.pct, fs = s.fixed.reduce((a, x) => a + x[2], 0);
+    const n = Math.max(1, Math.round((goal - fs) / s.flex[2]));
+    const items = [...s.fixed, [s.flex[0], n + ' ' + s.flex[1], n * s.flex[2]]];
+    const st = items.reduce((a, x) => a + x[2], 0); tot += st;
+    return `<div class="pslot"><div class="ph"><time>${s.t}</time><h3>${s.title}</h3><span>${st} kcal</span></div><ul>${items.map(x => `<li><span>${x[0]} <small>${x[1]}</small></span><b>${x[2]}</b></li>`).join('')}</ul></div>`;
+  }).join('');
+  $('#plan').innerHTML = html + `<p class="ptot">Kul lagbhag ${tot} kcal</p>` + (P.note ? `<p class="muted small">${P.note}</p>` : '');
+  drawAiChart();
+}
+function drawAiChart() {
+  if (!aiChart || !Array.isArray(aiChart.meals)) { $('#aiPlan').innerHTML = ''; return; }
+  const tot = aiChart.meals.reduce((a, m) => a + (m.items || []).reduce((b, i) => b + (+i.cal || 0), 0), 0);
+  $('#aiPlan').innerHTML = `<h3 style="margin:6px 0 10px">AI diet chart <small class="muted" style="font-weight:400;font-size:.8rem">${esc(aiChart.made || '')}</small></h3>` +
+    aiChart.meals.map(m => { const st = (m.items || []).reduce((b, i) => b + (+i.cal || 0), 0);
+      return `<div class="pslot"><div class="ph"><time>${esc(m.time)}</time><h3>${esc(m.title)}</h3><span>${st} kcal</span></div><ul>${(m.items || []).map(i => `<li><span>${esc(i.food)} <small>${esc(i.qty)}</small></span><b>${+i.cal || 0}</b></li>`).join('')}</ul></div>`; }).join('') +
+    `<p class="ptot">Kul lagbhag ${tot} kcal</p>` +
+    (aiChart.tips && aiChart.tips.length ? `<div class="card"><h3>Tips</h3><ul class="tips">${aiChart.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : '');
+}
+async function makeAiChart() {
+  if (!profile) { toast('Pehle profile bharo'); goTab('t-set'); return; }
+  if (!hasKey()) { toast('Settings mein AI key daalo'); goTab('t-set'); return; }
+  const c = calc(), btn = $('#bAiPlan');
+  const dietTxt = {veg: 'lacto-vegetarian', jain: 'strict Jain (no onion, garlic, potato, carrot or any root/underground vegetable, no eggs or meat; last meal before sunset)', egg: 'vegetarian plus eggs', nonveg: 'non-vegetarian'}[profile.diet || 'veg'];
+  const prompt = `Create a one-day Indian home-food diet chart.
+Person: ${profile.gender === 'm' ? 'male' : 'female'}, age ${profile.age}, height ${profile.height} cm, weight ${profile.weight} kg, goal: ${{lose: 'lose weight slowly and safely', keep: 'maintain weight', gain: 'gain weight healthily'}[profile.goal]}.
+Diet type: ${dietTxt}. Daily calorie target: ${c.target} kcal (total must be within 5% of this). Protein at least ${c.protein} g.
+Also try to meet: magnesium ${needs().mg} mg, potassium 3500 mg, zinc ${needs().zn} mg, vitamin C ${needs().vc} mg; keep sodium under 2000 mg.
+Use simple, affordable foods from an Indian kitchen, Hinglish (Roman script) names, household quantities (katori, pc, glass).
+Reply with ONLY valid JSON: {"meals":[{"time":"7:30 AM","title":"Nashta","items":[{"food":"Moong dal chilla","qty":"2 pc","cal":220}]}],"tips":["3 to 4 short practical Hinglish tips"]}`;
+  btn.disabled = true; btn.textContent = 'Chart ban raha hai…';
+  try {
+    const j = parseJSON(await aiCall(prompt, null));
+    if (!Array.isArray(j.meals)) throw new Error('Chart sahi format mein nahi aaya');
+    const d = new Date();
+    aiChart = {meals: j.meals, tips: j.tips || [], made: d.getDate() + ' ' + MONTHS[d.getMonth()] + ', ' + c.target + ' kcal'};
+    LS.set('cd_aichart', aiChart);
+    drawAiChart();
+    toast('AI diet chart ban gaya');
+  } catch (e) {
+    toast(e.message === 'NOKEY' ? 'Settings mein AI key daalo' : e.message);
+  }
+  btn.disabled = false; btn.textContent = '🤖 AI se meri diet chart banao';
+}
+
+/* ---------- SETTINGS ---------- */
+function fillSettings() {
+  const p = profile || {};
+  $('#pName').value = p.name || ''; $('#pAge').value = p.age || ''; $('#pGender').value = p.gender || 'm';
+  $('#pH').value = p.height || ''; $('#pW').value = p.weight || ''; $('#pAct').value = String(p.activity || 1.375);
+  $('#pGoal').value = p.goal || 'lose'; $('#pDiet').value = p.diet || 'veg'; $('#pCustom').value = p.customTarget || '';
+  $('#aProv').value = api.provider; $('#aGKey').value = api.geminiKey; $('#aGModel').value = api.geminiModel;
+  $('#aCKey').value = api.claudeKey; $('#aCModel').value = api.claudeModel;
+  provBoxes(); showCalc();
+}
+function provBoxes() { const g = $('#aProv').value === 'gemini'; $('#gBox').hidden = !g; $('#cBox').hidden = g; }
+function showCalc() {
+  if (!profile) return;
+  const c = calc(), box = $('#calcOut');
+  box.hidden = false;
+  box.innerHTML = `<p>BMR (aaram mein kharch): <b>${c.bmr} kcal</b></p><p>Roz ka kul kharch: <b>${c.tdee} kcal</b></p><p>Aapka target: <b style="color:var(--leaf-deep);font-size:1.15rem">${c.target} kcal</b>, protein ${c.protein}g</p>${c.warn ? `<p class="small" style="color:var(--chili);margin-top:6px">${c.warn}</p>` : ''}
+    <table class="needs"><caption style="text-align:left;font-weight:600;padding-top:8px">Roz ki zaroorat</caption>${(() => { const n = needs(); return NUT.map(d => `<tr><td>${d.name}</td><td>${d.type === 'max' && d.k !== 'cal' ? 'zyada se zyada ' : ''}${nfmt(n[d.k], d.k)} ${d.unit}</td></tr>`).join(''); })()}</table>
+    <p class="muted small" style="margin-top:6px">Adult ke liye ICMR-NIN 2020 ke aas-paas; sodium WHO limit. Pregnancy, bachche ya bimari mein zaroorat alag hoti hai.</p>`;
+}
+function saveProfile() {
+  const age = +$('#pAge').value, height = +$('#pH').value, weight = +$('#pW').value;
+  if (!(age >= 10 && age <= 100) || !(height >= 100 && height <= 230) || !(weight >= 25 && weight <= 250)) { toast('Umar, height aur wazan sahi bharo'); return; }
+  profile = {name: $('#pName').value.trim(), age, gender: $('#pGender').value, height, weight, activity: +$('#pAct').value,
+    goal: $('#pGoal').value, diet: $('#pDiet').value, customTarget: +$('#pCustom').value || 0};
+  LS.set('cd_profile', profile);
+  showCalc(); renderAll();
+  toast('Profile save ho gayi');
+}
+function saveApi() {
+  api = {provider: $('#aProv').value, geminiKey: $('#aGKey').value.trim(), geminiModel: $('#aGModel').value.trim() || 'gemini-2.5-flash',
+    claudeKey: $('#aCKey').value.trim(), claudeModel: $('#aCModel').value.trim() || 'claude-sonnet-5'};
+  LS.set('cd_api', api);
+  toast('AI setting save ho gayi');
+}
+async function testApi() {
+  saveApi();
+  const b = $('#bTestA'); b.disabled = true; b.textContent = 'Check ho raha hai…';
+  try { const j = parseJSON(await aiCall('Reply with only this JSON: {"ok":true}', null)); toast(j.ok ? 'Key sahi hai, scan chalega' : 'Jawab aaya par format alag hai'); }
+  catch (e) { toast(e.message === 'NOKEY' ? 'Pehle key daalo' : 'Error: ' + e.message); }
+  b.disabled = false; b.textContent = 'Test karo';
+}
+function exportData() {
+  const blob = new Blob([JSON.stringify({app: 'calorie-diagnosis', version: VERSION, profile, entries, aiChart}, null, 1)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'calorie-backup-' + dayKey(Date.now()) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+async function importData(file) {
+  try {
+    const j = JSON.parse(await file.text());
+    if (j.app !== 'calorie-diagnosis') throw new Error();
+    const ids = new Set(entries.map(e => e.id)); let n = 0;
+    (j.entries || []).forEach(e => { if (!ids.has(e.id)) { entries.push(e); n++; } });
+    if (j.profile) { profile = j.profile; LS.set('cd_profile', profile); }
+    if (j.aiChart) { aiChart = j.aiChart; LS.set('cd_aichart', aiChart); }
+    saveEntries(); fillSettings(); renderAll();
+    toast(`Backup restore hua, ${n} naye item`);
+  } catch (e) { toast('Ye Calorie Diagnosis ki backup file nahi hai'); }
+}
+
+/* ---------- events ---------- */
+function renderAll() {
+  renderToday();
+  if ($('#t-hist').classList.contains('on')) renderHistory();
+  if ($('#t-diet').classList.contains('on')) renderDiet();
+}
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => goTab(b.dataset.tab)));
+$('#bCam').onclick = () => $('#fCam').click();
+$('#bGal').onclick = () => $('#fGal').click();
+$('#bMan').onclick = () => { pending = newPending('manual'); drawSearch(); };
+['#fCam', '#fGal'].forEach(id => $(id).addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; onPick(f); }));
+$('#sheetX').onclick = closeSheet;
+$('#sheetWrap').addEventListener('click', e => { if (e.target.id === 'sheetWrap') closeSheet(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#sheetWrap').hidden) closeSheet(); });
+
+document.addEventListener('click', e => {
+  const go = e.target.closest('[data-go]');
+  if (go) { closeSheet(); goTab(go.dataset.go); return; }
+  const del = e.target.closest('.del');
+  if (del) {
+    const it = entries.find(x => x.id === del.dataset.id);
+    if (it && confirm(`"${it.name}" diary se hatayein?`)) { entries = entries.filter(x => x.id !== it.id); saveEntries(); renderAll(); toast('Hata diya'); }
+    return;
+  }
+  const bar = e.target.closest('.bar');
+  if (bar) { histSel = bar.dataset.k; renderHistory(); }
+});
+$('#chart').addEventListener('keydown', e => { const bar = e.target.closest('.bar'); if (bar && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); histSel = bar.dataset.k; renderHistory(); } });
+$('#hDate').addEventListener('change', e => { if (e.target.value) { histSel = e.target.value; renderHistory(); } });
+
+$('#sheetBody').addEventListener('click', e => {
+  const t = e.target;
+  const st = t.closest('.pst');
+  if (st) { const it = pending.items[+st.dataset.i]; it.mult = Math.max(.5, Math.min(5, it.mult + +st.dataset.d)); drawPending(); return; }
+  const fr = t.closest('.frow');
+  if (fr) { const f = FOOD[+fr.dataset.f]; pending.items.push({name: f[0], portion: f[1], cal: f[2], p: f[3], c: f[4], f: f[5], na: f[6], mg: f[7], kp: f[8], zn: f[9], vd: f[10], vc: f[11], mult: 1, on: true}); toast(f[0] + ' chuna'); drawPending(); return; }
+  if (t.id === 'cAdd') {
+    const n = $('#cName').value.trim(), k = +$('#cCal').value;
+    if (!n || !(k > 0)) { toast('Naam aur calorie dono bharo'); return; }
+    pending.items.push({name: n, portion: '1 serving (sirf calorie)', cal: Math.round(k), p: 0, c: 0, f: 0, na: 0, mg: 0, kp: 0, zn: 0, vd: 0, vc: 0, mult: 1, on: true}); drawPending(); return;
+  }
+  if (t.id === 'addMore') { if (!pending) pending = newPending('manual'); drawSearch(); return; }
+  if (t.id === 'toPend') { drawPending(); return; }
+  if (t.id === 'retake') { closeSheet(); $('#fCam').click(); return; }
+  if (t.id === 'savePend') savePending();
+});
+$('#sheetBody').addEventListener('change', e => {
+  const t = e.target;
+  if (t.classList.contains('pchk')) { pending.items[+t.dataset.i].on = t.checked; drawPending(); }
+  if (t.id === 'pMeal') pending.meal = t.value;
+  if (t.id === 'pTime') pending.time = t.value;
+});
+
+$('#bSaveP').onclick = saveProfile;
+$('#aProv').onchange = provBoxes;
+$('#bSaveA').onclick = saveApi;
+$('#bTestA').onclick = testApi;
+$('#bAiPlan').onclick = makeAiChart;
+$('#bExp').onclick = exportData;
+$('#fImp').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) importData(f); });
+$('#bClr').onclick = () => {
+  if (confirm('Saari diary (khane ki entries) mit jayegi. Pehle backup le liya?') && confirm('Pakka mitana hai?')) {
+    entries = []; saveEntries(); renderAll(); toast('Diary saaf ho gayi');
+  }
+};
+
+/* din badle to screen apne aap update ho */
+let lastDay = dayKey(Date.now());
+setInterval(() => { tick(); const k = dayKey(Date.now()); if (k !== lastDay) { lastDay = k; histSel = k; renderAll(); } }, 20000);
+
+tick(); fillSettings(); renderToday();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
