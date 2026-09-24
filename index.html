@@ -1,7 +1,29 @@
 <!DOCTYPE html>
 <!--
-  Calorie Diagnosis — v1.07
+  Calorie Diagnosis — v1.12
   Ankush New Vision
+  v1.12 (25-09-2026): Naya saaf layout + app guide + dawai / allergy
+   - Header mein "Namaste, naam 👋" aur ? (madad) button; halka hara background
+   - Aaj tab: "Aaj ke kaam" (khana, paani, wazan, din ka hisaab) ✓ patti; "Khana jodo" ke 4 bade button samjhaane wali line ke saath;
+     "Roz ke kaam" section; poshan ko band/khul wala dabba
+   - Diet tab: upar section chips (Salah, Calorie, Problem, Diet plan); har section ka icon + ek line samjhaane wali
+   - 6 slide ki "App kaise chalayein" guide — pehli baar setup ke baad, purane customers ko bhi ek baar; ? se kabhi bhi
+   - Sawaalon mein 3 naye: dawai (naam, kitni, kab), food allergy, koi aur bimari / operation
+   - Settings: "Sehat" section (dawai, allergy, aur bimari); AI plan / salah / scan mein allergy aur dawai ka dhyan
+  v1.11 (25-09-2026): Profile ke liye ek-ek sawaal (Stage 1: wazan kam karna)
+   - Pehli baar app kholne par 14 chhote sawaal, ek screen par ek: naam, gender, umar, height (feet-inch), wazan,
+     goal, target wazan (healthy range ke saath), speed, khana, kaam, neend, buri / achhi aadatein, health problem
+   - Aakhir mein summary: BMI, healthy wazan, calorie, target kab tak, paani, protein; phir profile mein save
+   - Aaj tab: Wazan card (shuru → abhi → target, kitna kam hua, kab tak) + "aaj ka wazan daalo"
+   - Aaj tab: "Aaj ka din kaise gaya?" — achhi baatein hari, galtiyan LAAL line mein; app khud bhi calorie/paani/protein dekh ke likhta hai
+   - Aadat ke hisaab se roz ki tip; AI plan aur "Kya kha sakta hu" mein aadatein aur target wazan bhi jaate hain
+   - Settings: target wazan + speed, aadatein, "saare sawaal dobara bharo"
+  v1.10 (24-09-2026): v1.07 se aage (v1.08 ka in-app license hataya — license ab APK Factory karega)
+   - "Kya kha sakta hu?": photo / naam se AI salah — kitna khayein, mana, ya badle mein kya (substitute), diary mein jod sakte ho
+   - Paani: wazan ke hisaab se roz kitna (35 ml/kg), confirm karo ya apna likho, +1 glass tracker
+   - Calorie hisaab: BMR, wazan same rakhne, halka / normal wazan kam, wazan badhane ki calorie (Diet tab + Settings)
+   - AI diet plan: saare 10 poshan cover (protein, magnesium, carbs, potassium, zinc, vit C...), plan ka poshan vs zaroorat dikhata hai, kami ho to dobara banata hai
+   - AI diet plan din mein 1 baar, raat 12 baje reset (v1.09 wala niyam)
   v1.07 (24-09-2026): Key guide page + key lock + daily auto backup
    - App shuru hote hi (jab tak key nahi lagi) "API key kaise banayein" page: link + 4 step + circle wale screenshot
    - Usi page par key paste box + Paste button; Continue par key test hoke save aur LOCK
@@ -92,17 +114,50 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:16px/1.55 'Hind','Noto Sans Devanagari','Noto Sans',system-ui,sans-serif;min-height:100%;padding-bottom:88px;-webkit-tap-highlight-color:transparent}
+body{background:linear-gradient(180deg,color-mix(in srgb,var(--leaf) 13%,var(--bg)) 0,var(--bg) 420px) no-repeat,var(--bg);color:var(--ink);font:16px/1.55 'Hind','Noto Sans Devanagari','Noto Sans',system-ui,sans-serif;min-height:100%;padding-bottom:88px;-webkit-tap-highlight-color:transparent}
 h1,h2,h3{font-family:'Baloo 2','Hind',system-ui,sans-serif;line-height:1.15;margin:0}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--haldi);outline-offset:2px;border-radius:8px}
 .muted{color:var(--muted)}.small{font-size:.86rem}
 
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 18px 10px;border-bottom:1px solid var(--line)}
-.top h1{font-size:1.35rem;font-weight:800;color:var(--leaf-deep)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 18px 10px;border-bottom:1px solid var(--line)}
+.top h1{font-size:clamp(1.05rem,4.8vw,1.35rem);font-weight:800;color:var(--leaf-deep);white-space:nowrap}
 .top .sub{margin:0;font-size:.82rem;color:var(--muted)}
+.top .hi{margin:0;font-size:.9rem;font-weight:600;color:var(--ink)}
+.hr{display:flex;align-items:center;gap:10px}
+.helpbtn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--leaf);background:var(--surface);color:var(--leaf-deep);font-weight:800;font-size:1.05rem;cursor:pointer;flex:none}
+.stitle{display:flex;align-items:center;gap:8px;font-size:1.22rem;margin:26px 0 2px;scroll-margin-top:120px}
+.shelp{color:var(--muted);font-size:.87rem;margin:0 0 12px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:16px;padding:14px;cursor:pointer;color:var(--ink);min-height:104px;box-shadow:0 2px 8px rgba(20,40,28,.06)}
+.tile .ti{font-size:1.7rem;line-height:1.1;margin-bottom:4px}
+.tile b{font-size:1rem}.tile small{color:var(--muted);font-size:.8rem;line-height:1.3}
+.tile.t-main{background:var(--leaf-deep);border-color:var(--leaf-deep);color:var(--bg)}.tile.t-main small{color:color-mix(in srgb,var(--bg) 80%,transparent)}
+.todo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:16px 0 0}
+.todo button{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 4px;text-align:center;cursor:pointer;color:var(--ink);font-size:.72rem;line-height:1.25}
+.todo button span{display:block;font-size:1.25rem}
+.todo button.done{border-color:var(--leaf);background:var(--chip)}
+.todo button.done b{color:var(--leaf-deep)}
+.fold{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-top:22px;overflow:hidden}
+.fold summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:13px 14px;cursor:pointer;font-family:'Baloo 2',sans-serif;font-size:1.12rem;font-weight:700}
+.fold summary::-webkit-details-marker{display:none}
+.fold summary small{font-family:'Hind',sans-serif;font-weight:500;font-size:.85rem;color:var(--muted)}
+.fold[open] .chev{transform:rotate(180deg)}.chev{transition:transform .2s;color:var(--muted)}
+.fold .nut{border:0;border-top:1px solid var(--line);border-radius:0}
+.fold .nnote{padding:0 14px 12px}
+.subnav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:4;display:flex;gap:6px;overflow-x:auto;padding:8px 0;margin:-6px 0 4px;background:color-mix(in srgb,var(--bg) 92%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.subnav button{flex:none;border:1.5px solid var(--line);background:var(--surface);border-radius:20px;padding:7px 13px;font-weight:600;font-size:.88rem;cursor:pointer;color:var(--ink)}
+.tour-card{text-align:center;padding-top:18px}
+.tour-card .tbig{font-size:3.6rem;line-height:1;margin:8px 0 10px}
+.tour-card h2{margin:0 0 12px}
+.tour-card ul{text-align:left;list-style:none;padding:0;margin:0 0 18px}
+.tour-card li{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px;font-size:.98rem}
+.dots{display:flex;justify-content:center;gap:6px;margin:6px 0 16px}.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--leaf);width:20px;border-radius:4px}
+.field textarea,.qta{width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;font-size:1rem;color:var(--ink);font-family:inherit;min-height:84px;resize:vertical}
+.qta{border:2px solid var(--leaf);font-size:1.05rem;min-height:120px}
 .clock{text-align:right;line-height:1.2}
-.clock span{display:block;font-size:.8rem;color:var(--muted)}
+.clock span{display:block;font-size:.8rem;color:var(--muted);white-space:nowrap}
+.clock b{white-space:nowrap}
 .clock b{font-family:'Baloo 2',sans-serif;font-size:1.15rem}
 
 main{max-width:560px;margin:0 auto;padding:16px 18px}
@@ -253,6 +308,43 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 .snap .btn{padding:6px 12px;font-size:.85rem}
 .chkline{display:flex;gap:10px;align-items:center;margin-top:12px;font-weight:500}
 .chkline input{width:20px;height:20px;accent-color:var(--leaf)}
+.wcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:16px}
+.wh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+.wh span{font-size:.9rem;color:var(--muted)}
+.wcard .row{margin-top:10px}.wcard .row .btn:first-child{flex:0 0 56px}
+.wconf{background:var(--chip);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:.92rem}
+.needs tr.cur td{color:var(--leaf-deep);font-weight:700}
+.verdict{border-radius:14px;padding:12px 14px;margin:6px 0 10px;border:2px solid}
+.verdict .vt{font-family:'Baloo 2',sans-serif;font-size:1.25rem;font-weight:800}
+.verdict .vq{font-size:1.15rem;font-weight:700;margin-top:4px}
+.v-yes{border-color:var(--leaf);background:color-mix(in srgb,var(--leaf) 10%,var(--surface))}.v-yes .vt{color:var(--leaf)}
+.v-mid{border-color:var(--haldi);background:color-mix(in srgb,var(--haldi) 14%,var(--surface))}.v-mid .vt{color:#9a6b00}
+.v-no{border-color:var(--chili);background:color-mix(in srgb,var(--chili) 10%,var(--surface))}.v-no .vt{color:var(--chili)}
+.asklist{margin:4px 0 10px;padding-left:20px}
+.qprog{height:6px;border-radius:3px;background:var(--track);overflow:hidden;margin:4px 0 18px}
+.qprog i{display:block;height:100%;background:var(--leaf);border-radius:3px;transition:width .3s}
+.qtop{display:flex;align-items:center;gap:10px;min-height:36px}
+.qtop .qb{border:1px solid var(--line);background:var(--surface);border-radius:50%;width:36px;height:36px;font-size:1.1rem;cursor:pointer}
+.qtop .qn{color:var(--muted);font-size:.85rem;flex:1}
+.qq{font-family:'Baloo 2',sans-serif;font-size:1.45rem;line-height:1.2;margin:4px 0 6px;color:var(--ink)}
+.qh{color:var(--muted);margin:0 0 14px;font-size:.93rem}
+.qopt{display:block;width:100%;text-align:left;border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 16px;font-size:1.05rem;font-weight:600;margin-bottom:10px;cursor:pointer;color:var(--ink)}
+.qopt.on{border-color:var(--leaf);background:var(--chip)}
+.qchips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.qchip{border:2px solid var(--line);background:var(--surface);border-radius:22px;padding:9px 14px;font-size:.95rem;font-weight:600;cursor:pointer;color:var(--ink)}
+.qchip.on{border-color:var(--leaf);background:var(--chip);color:var(--leaf-deep)}
+.qchip.bad.on{border-color:var(--chili);background:color-mix(in srgb,var(--chili) 12%,var(--surface));color:var(--chili)}
+.qinp{width:100%;border:2px solid var(--leaf);background:var(--surface);border-radius:12px;padding:14px;font-size:1.3rem;color:var(--ink)}
+.qunit{display:flex;align-items:center;gap:10px}.qunit span{font-weight:700;color:var(--muted)}
+.qht{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qht select{width:100%;border:2px solid var(--leaf);background:var(--surface);border-radius:12px;padding:14px;font-size:1.2rem;color:var(--ink)}
+.qlink{background:none;border:0;color:var(--leaf-deep);font-weight:600;text-decoration:underline;padding:8px 0;cursor:pointer}
+.qbox{background:var(--chip);border-radius:12px;padding:10px 12px;margin:10px 0;font-size:.93rem}
+.qsum td{padding:6px 0}
+.ci-line{padding:7px 10px;border-radius:8px;margin:6px 0;font-size:.95rem}
+.ci-good{border-left:4px solid var(--leaf);background:color-mix(in srgb,var(--leaf) 8%,var(--surface))}
+.ci-bad{border-left:4px solid var(--chili);background:color-mix(in srgb,var(--chili) 9%,var(--surface));color:var(--chili);font-weight:600}
+.wtbig{font-family:'Baloo 2',sans-serif;font-size:1.6rem;font-weight:800}
 .docw{background:color-mix(in srgb,var(--chili) 12%,var(--surface));border-left:4px solid var(--chili);border-radius:8px;padding:10px 12px;font-size:.9rem;margin:10px 0}
 .nut{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 14px}
 .nr{padding:9px 0;border-bottom:1px solid var(--line)}
@@ -270,7 +362,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 .mini div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 8px;line-height:1.2}
 .mini b{display:block;font-size:.92rem}.mini span{font-size:.72rem;color:var(--muted)}
 .needs{width:100%;border-collapse:collapse;margin-top:8px;font-size:.9rem}
-.needs td{padding:5px 0;border-top:1px dashed var(--line)}.needs td:last-child{text-align:right;font-weight:600}
+.needs td{padding:5px 0;border-top:1px dashed var(--line)}.needs td:last-child{text-align:right;font-weight:600;white-space:nowrap;padding-left:10px}
 
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:24px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:30;max-width:90%;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%)}
@@ -281,10 +373,10 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 
 <header class="top">
   <div>
+    <p class="hi" id="hello">Namaste 👋</p>
     <h1>Calorie Diagnosis</h1>
-    <p class="sub">Khana scan karo, calorie jaano</p>
   </div>
-  <div class="clock"><span id="clkDay"></span><b id="clkTime"></b></div>
+  <div class="hr"><div class="clock"><span id="clkDay"></span><b id="clkTime"></b></div><button class="helpbtn" id="bHelp" aria-label="App kaise chalayein">?</button></div>
 </header>
 
 <main>
@@ -295,49 +387,68 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
       <div class="katoris" id="katoris"></div>
     </div>
     <p class="rem" id="remText"></p>
-    <div class="actions">
-      <button class="btn primary" id="bCam">📷 Photo khicho</button>
-      <button class="btn" id="bGal">🖼️ Gallery / Screenshot</button>
-      <button class="btn ghost" id="bMan">✍️ Khud likho</button>
+    <div class="todo" id="todo" aria-label="Aaj ke kaam"></div>
+
+    <h2 class="stitle" id="s-add">🍽️ Khana jodo</h2>
+    <p class="shelp">Jo bhi khaya, yahan se jodo — AI calorie aur poshan nikaal dega.</p>
+    <div class="tiles">
+      <button class="tile t-main" id="bCam"><span class="ti">📷</span><b>Photo khicho</b><small>Thali ya khane ki photo</small></button>
+      <button class="tile" id="bGal"><span class="ti">🖼️</span><b>Gallery</b><small>Photo ya screenshot chuno</small></button>
+      <button class="tile" id="bMan"><span class="ti">✍️</span><b>Khud likho</b><small>List se roti, dal… chuno</small></button>
+      <button class="tile" id="bAsk"><span class="ti">🤔</span><b>Kya kha sakta hu?</b><small>Khane se pehle AI se pucho</small></button>
     </div>
-    <h2 class="sec">Aaj ka poshan</h2>
-    <p class="muted small" style="margin:-6px 0 10px">Roz ki zaroorat vs aaj kitna khaya</p>
-    <div id="todayNut"></div>
-    <h2 class="sec">Aaj ka khana</h2>
+
+    <h2 class="stitle">✅ Roz ke kaam</h2>
+    <p class="shelp">Paani, wazan aur din ka hisaab — roz sirf 1 minute.</p>
+    <div id="weightBox"></div>
+    <div id="waterBox"></div>
+    <div id="checkBox"></div>
+
+    <details class="fold" id="nutFold"><summary><span>🧪 Aaj ka poshan <small id="nutSum"></small></span><span class="chev">▾</span></summary><div id="todayNut"></div></details>
+
+    <h2 class="stitle">📋 Aaj ka khana</h2>
     <div id="todayList"></div>
   </section>
 
   <section id="t-hist" class="tab" aria-label="History">
-    <h2 class="sec" style="margin-top:4px">Pichle 7 din</h2>
+    <h2 class="stitle" style="margin-top:6px">📅 Pichle 7 din</h2>
+    <p class="shelp">Bar par tap karo — us din ka khana aur hisaab neeche dikhega.</p>
     <div id="chart"></div>
     <div class="stats" id="hStats"></div>
     <label class="field">Koi bhi din dekho<input type="date" id="hDate"></label>
     <div class="dayhead"><h3 id="hTitle"></h3><span id="hTot" class="muted"></span></div>
+    <div id="hCheck"></div>
     <div id="hList"></div>
-    <h2 class="sec">Us din ka poshan</h2>
+    <h2 class="stitle">🧪 Us din ka poshan</h2>
     <div id="hNut"></div>
   </section>
 
   <section id="t-diet" class="tab" aria-label="Diet">
-    <h2 class="sec" style="margin-top:4px">Aaj ke suggestions</h2>
+    <nav class="subnav" aria-label="Diet ke hisse"><button data-jump="s-sugg">💡 Salah</button><button data-jump="s-cal">🔥 Calorie</button><button data-jump="s-prob">🩺 Problem</button><button data-jump="s-plan">🥗 Diet plan</button></nav>
+    <h2 class="stitle" id="s-sugg" style="margin-top:8px">💡 Aaj ke suggestions</h2>
+    <p class="shelp">Aapke aaj ke khane, paani aur aadaton ke hisaab se.</p>
     <div id="sugg"></div>
-    <h2 class="sec">Problem chart <small class="muted" style="font-size:.85rem;font-weight:500">(6 point)</small></h2>
-    <p class="muted small" style="margin:-6px 0 14px">Jo taklif ho woh chuno ya likho — diet plan usi hisaab se banega.</p>
+    <h2 class="stitle" id="s-cal">🔥 Aapka calorie hisaab</h2>
+    <p class="shelp">Kitni calorie mein wazan same rahega, kam hoga ya badhega.</p>
+    <div class="card" id="calCard"></div>
+    <h2 class="stitle" id="s-prob">🩺 Problem chart <small class="muted" style="font-size:.85rem;font-weight:500">(6 point)</small></h2>
+    <p class="shelp">Jo taklif ho woh chuno ya likho — diet plan usi hisaab se banega.</p>
     <div class="pgrid" id="probGrid"></div>
     <button class="btn primary full" id="bProbSave">Diet plan set karo</button>
-    <h2 class="sec">Diet chart</h2>
+    <h2 class="stitle" id="s-plan">🥗 Diet plan</h2>
+    <p class="shelp">Neeche aapka general plan hai. Roz 1 baar AI se naya plan bana sakte ho — raat 12 baje phir khulta hai.</p>
     <p id="planMeta" class="muted" style="margin:0 0 10px"></p>
     <div id="probWarn"></div>
     <div id="plan"></div>
     <div id="probCards"></div>
-    <button class="btn primary full" id="bAiPlan">🤖 AI se naya diet plan banao</button>
+    <button class="btn primary full" id="bAiPlan">🤖 AI se aaj ka diet plan banao</button>
     <div id="aiPlan" style="margin-top:14px"></div>
     <button class="btn full" id="bShare">📤 Diet plan WhatsApp / share karo</button>
     <p class="disc">Ye app calorie ka andaza deta hai, medical salah nahi. Problem chart wali salah general hai. Bimari mein diet badalne se pehle doctor / dietitian se baat karo, aur dawai apne aap band mat karo.</p>
   </section>
 
   <section id="t-set" class="tab" aria-label="Settings">
-    <h2 class="sec" style="margin-top:4px">Meri profile</h2>
+    <h2 class="stitle" style="margin-top:6px">👤 Meri profile</h2>
     <div class="grid2">
       <label class="field full">Naam<input id="pName" autocomplete="name"></label>
       <label class="field">Umar (saal)<input id="pAge" type="number" inputmode="numeric" min="10" max="100"></label>
@@ -361,12 +472,20 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
         <option value="egg">Veg + anda</option>
         <option value="nonveg">Non-veg</option>
       </select></label>
+      <label class="field">Target wazan (kg)<input id="pTarget" type="number" inputmode="decimal" min="30" max="250"></label>
+      <label class="field">Speed<select id="pPace"><option value="slow">¼ kg / hafta</option><option value="normal">½ kg / hafta</option><option value="fast">¾ kg / hafta</option></select></label>
       <label class="field full">Apna calorie target (optional, kcal roz ka)<input id="pCustom" type="number" inputmode="numeric" placeholder="Khaali chhodo = auto (jaise 1800)"></label>
     </div>
+    <h3 style="margin:18px 0 0;font-size:1.08rem">🩺 Sehat</h3>
+    <label class="field">Chal rahi dawai (naam, kitni, kab)<textarea id="pMeds" placeholder="Jaise: Metformin 500 — subah-shaam khane ke baad"></textarea></label>
+    <label class="field">Food allergy / jo suit nahi karta<input id="pAllergy" placeholder="Jaise: moongfali, doodh"></label>
+    <label class="field">Koi aur bimari / operation<input id="pOther" placeholder="Jaise: migraine, gallbladder operation 2023"></label>
     <button class="btn primary full" id="bSaveP">Profile save karo</button>
+    <div id="habitInfo"></div>
+    <button class="btn full" id="bQuiz">🔁 Saare sawaal dobara bharo</button>
     <div id="calcOut" class="calcout" hidden></div>
 
-    <h2 class="sec">AI scan setting</h2>
+    <h2 class="stitle">🤖 AI scan setting</h2>
     <label class="field">AI provider<select id="aProv">
       <option value="gemini">Google Gemini (free key milti hai)</option>
       <option value="claude">Anthropic Claude</option>
@@ -388,7 +507,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
     <button class="btn full" id="bGuide">🔑 Key banane ka tareeka / nayi key lagao</button>
     <p class="muted small">Key sirf is phone mein save hoti hai, kahin aur nahi jaati.</p>
 
-    <h2 class="sec">Backup</h2>
+    <h2 class="stitle">💾 Backup</h2>
     <div class="row">
       <button class="btn" id="bExp">⬇️ Backup download</button>
       <label class="btn">⬆️ Backup restore<input type="file" id="fImp" accept="application/json,.json" hidden></label>
@@ -397,10 +516,14 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
     <h3 style="margin:18px 0 6px;font-size:1.05rem">Auto backup (phone ke andar, pichhle 7 din)</h3>
     <div id="snapList" class="card" style="padding:4px 14px"></div>
     <button class="btn danger full" id="bClr">Saari diary mitao</button>
-    <p class="ver">Calorie Diagnosis v1.07, Ankush New Vision</p>
+    <h2 class="stitle">📖 Madad</h2>
+    <button class="btn full" id="bTour">📖 App kaise chalayein (guide)</button>
+    <p class="ver">Calorie Diagnosis v1.12, Ankush New Vision</p>
   </section>
 </main>
 
+<div id="tour" class="onb" hidden role="dialog" aria-modal="true" aria-label="App kaise chalayein"><div class="onb-in" id="tourIn"></div></div>
+<div id="quiz" class="onb" hidden role="dialog" aria-modal="true" aria-label="Profile ke sawaal"><div class="onb-in" id="quizIn"></div></div>
 <div id="onb" class="onb" hidden role="dialog" aria-modal="true" aria-label="API key guide">
   <div class="onb-in">
     <button class="x" id="onbX" aria-label="Band karo" hidden>×</button>
@@ -443,10 +566,12 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 
 <input type="file" id="fCam" accept="image/*" capture="environment" hidden>
 <input type="file" id="fGal" accept="image/*" hidden>
+<input type="file" id="fAskCam" accept="image/*" capture="environment" hidden>
+<input type="file" id="fAskGal" accept="image/*" hidden>
 
 <script>
 'use strict';
-const VERSION = '1.07';
+const VERSION = '1.12';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad = n => String(n).padStart(2, '0');
@@ -640,18 +765,22 @@ const probLabel = p => (p.k && p.k !== 'other' ? PROB[p.k].name : 'Anya') + ((p.
 const probSig = () => JSON.stringify(activeProbs().map(p => [p.k, (p.note || '').trim()]));
 
 /* ---------- target calculation (Mifflin-St Jeor) ---------- */
-function calc() {
-  if (!profile) return {bmr: 0, tdee: 0, target: 2000, protein: 55, warn: ''};
-  const {age, gender, height, weight, activity, goal, customTarget} = profile;
+const PACE = {slow: 250, normal: 500, fast: 750};
+function calc(pp) {
+  const P = pp || profile;
+  if (!P) return {bmr: 0, tdee: 0, target: 2000, protein: 55, warn: ''};
+  const {age, gender, height, weight, activity, goal, customTarget} = P;
   const bmr = 10 * weight + 6.25 * height - 5 * age + (gender === 'm' ? 5 : -161);
   const tdee = bmr * activity;
   const preg = hasProb('preg');
-  let t = customTarget ? customTarget : tdee + (goal === 'lose' && !preg ? -500 : goal === 'gain' ? 300 : 0);
+  let t = customTarget ? customTarget : tdee + (goal === 'lose' && !preg ? -(PACE[P.pace] || 500) : goal === 'gain' ? 300 : 0);
   const floor = gender === 'm' ? 1500 : 1200;
   let warn = preg && goal === 'lose' ? 'Pregnancy / feeding mein wazan kam karne wala target nahi lagaya.' : '';
   if (preg && customTarget && customTarget < tdee) { t = tdee; warn = 'Pregnancy / feeding mein roz ke kharch se kam calorie ka target nahi lagaya.'; }
   if (t < floor) { t = floor; warn = `Target ${floor} kcal se neeche nahi rakha. Isse kam khana doctor ya dietitian ki salah ke bina safe nahi hai.`; }
-  return {bmr: Math.round(bmr), tdee: Math.round(tdee), target: Math.round(t / 10) * 10, protein: Math.round(weight * 0.9), warn};
+  const r10 = v => Math.round(v / 10) * 10;
+  return {bmr: Math.round(bmr), tdee: r10(tdee), target: r10(t), protein: Math.round(weight * 0.9), warn, floor, preg,
+    lose1: r10(Math.max(floor, tdee - 250)), lose2: r10(Math.max(floor, tdee - 500)), lose3: r10(Math.max(floor, tdee - 750)), gain: r10(tdee + 300)};
 }
 /* ---------- poshan (nutrients) ---------- */
 const KEYS = ['cal', 'p', 'c', 'f', 'na', 'mg', 'kp', 'zn', 'vd', 'vc'];
@@ -702,7 +831,7 @@ const sum = list => list.reduce((s, e) => { KEYS.forEach(k => { s[k] += +e[k] ||
 let toastT;
 function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600); }
 function openSheet(html) { $('#sheetBody').innerHTML = html; $('#sheetWrap').hidden = false; document.body.style.overflow = 'hidden'; }
-function closeSheet() { $('#sheetWrap').hidden = true; document.body.style.overflow = ''; pending = null; }
+function closeSheet() { $('#sheetWrap').hidden = true; document.body.style.overflow = ''; pending = null; ask = null; }
 function goTab(id) {
   document.querySelectorAll('.tab').forEach(s => s.classList.toggle('on', s.id === id));
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id));
@@ -712,7 +841,7 @@ function goTab(id) {
 }
 function tick() {
   const d = new Date();
-  $('#clkDay').textContent = DAYS_FULL[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+  $('#clkDay').textContent = DAYS[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
   $('#clkTime').textContent = d.toLocaleTimeString('en-IN', {hour: 'numeric', minute: '2-digit'});
 }
 
@@ -732,7 +861,7 @@ function renderToday() {
   const c = calc(), t = sum(dayEntries(dayKey(Date.now())));
   const eaten = Math.round(t.cal), rem = c.target - eaten;
   $('#nudge').innerHTML = !profile
-    ? `<div class="card"><h3>Pehle apni profile bharo</h3><p>Umar, height aur wazan se aapka sahi calorie target banega. Abhi 2000 kcal maan ke chal rahe hain.</p><button class="btn primary full" data-go="t-set">Profile bharo</button></div>`
+    ? `<div class="card"><h3>Pehle apni profile bharo</h3><p>Umar, height aur wazan se aapka sahi calorie target banega. Abhi 2000 kcal maan ke chal rahe hain.</p><button class="btn primary full" data-quiz="1">Profile bharo (2 minute)</button></div>`
     : (c.warn ? `<div class="warn">${c.warn}</div>` : '');
   $('#ring').innerHTML = ringSVG(eaten, c.target) +
     `<div class="rc"><span class="big">${eaten}</span><span class="of">/ ${c.target} kcal khaya</span></div>`;
@@ -744,6 +873,11 @@ function renderToday() {
   rt.textContent = eaten === 0 ? 'Aaj abhi tak kuch nahi joda' : rem >= 0 ? `Aaj ${rem} kcal aur kha sakte ho` : `Target se ${-rem} kcal zyada ho gaya`;
   $('#todayList').innerHTML = listHTML(dayKey(Date.now()));
   $('#todayNut').innerHTML = nutHTML(t, dayEntries(dayKey(Date.now())));
+  renderWater(); renderWeight();
+  $('#todo').innerHTML = todoHTML();
+  $('#nutSum').textContent = `— ${nutOkCount(t)}/10 theek`;
+  $('#hello').textContent = `Namaste${profile && profile.name ? ', ' + profile.name.split(' ')[0] : ''} 👋`;
+  $('#checkBox').innerHTML = checkHTML(dayKey(Date.now()), true);
 }
 function listHTML(k) {
   const list = dayEntries(k);
@@ -752,7 +886,7 @@ function listHTML(k) {
     const g = list.filter(e => e.meal === id);
     if (!g.length) return '';
     return `<div class="meal"><div class="mh"><h3>${label}</h3><span>${Math.round(sum(g).cal)} kcal</span></div>` +
-      g.map(e => `<div class="ent"><time>${fmtTime(e.ts)}</time><div class="en"><b>${esc(e.name)}</b><small>${esc(e.portion || '')}${e.src === 'scan' ? ' (scan)' : ''}</small></div><span class="ec">${e.cal}</span><button class="del" data-id="${e.id}" aria-label="${esc(e.name)} hatao">×</button></div>`).join('') +
+      g.map(e => `<div class="ent"><time>${fmtTime(e.ts)}</time><div class="en"><b>${esc(e.name)}</b><small>${esc(e.portion || '')}${e.src === 'scan' ? ' (scan)' : e.src === 'ask' ? ' (AI salah)' : ''}</small></div><span class="ec">${e.cal}</span><button class="del" data-id="${e.id}" aria-label="${esc(e.name)} hatao">×</button></div>`).join('') +
       `</div>`;
   }).join('');
 }
@@ -860,7 +994,8 @@ async function onPick(file) {
   }
   openSheet(`<div class="scanhead"><img class="thumb" src="${img.url}" alt="Scan ho rahi photo"><div><h3>Scan ho raha hai…</h3><p class="muted small">AI khana pehchan raha hai, 5–15 second</p><div class="loader"></div></div></div>`);
   try {
-    const j = parseJSON(await aiCall(SCAN_PROMPT, img.b64));
+    const al = profile && (profile.allergy || '').trim();
+    const j = parseJSON(await aiCall(SCAN_PROMPT + (al ? `\nThe user is allergic to / cannot eat: ${al}. If any item may contain it, clearly warn in health_note.` : ''), img.b64));
     if (pending !== me) return; // sheet band ho gayi
     if (!j.is_food || !Array.isArray(j.items) || !j.items.length) {
       openSheet(`<img class="thumb big" src="${img.url}" alt="Scan ki gayi photo"><h3>Is photo mein khana nahi dikha</h3><p class="muted">Thali upar se, achhi roshni mein photo lo. Ya item khud chuno.</p><div class="row"><button class="btn primary" id="retake">Dobara photo</button><button class="btn" id="addMore">Khud chuno</button></div>`);
@@ -961,6 +1096,7 @@ function renderHistory() {
   $('#hTitle').textContent = fmtDay(histSel);
   $('#hTot').textContent = Math.round(sum(dayEntries(histSel)).cal) + ' kcal';
   $('#hList').innerHTML = listHTML(histSel);
+  $('#hCheck').innerHTML = checkHTML(histSel, histSel === dayKey(Date.now()));
   $('#hNut').innerHTML = nutHTML(sum(dayEntries(histSel)), dayEntries(histSel));
 }
 
@@ -987,16 +1123,23 @@ function suggestions() {
     low('vc', 'Vitamin C', 'Roz ek amla, amrood, santra ya papita — ya khane par nimbu.');
     if ((t.vd || 0) < n.vd * .5) out.push(['Vitamin D', 'Subah 15–20 min dhoop lo (haath-chehra khule). Thakaan ya haddi mein dard rehta ho to test karwa ke doctor se poochho.', 0]);
   }
+  if (profile && (profile.bad || []).length) { const b = profile.bad, id = b[Math.floor(Date.now() / 864e5) % b.length]; out.push([`Aaj ki aadat: ${hLabel(BAD_HABITS, id)}`, HABIT_TIPS[id], 0]); }
+  const yk = dayKey(Date.now() - 864e5), yc = checks[yk];
+  if (yc && (yc.bad || []).length) out.push([`Kal ki galti: ${hLabel(CI_BAD, yc.bad[0])}`, HABIT_TIPS[yc.bad[0]] || 'Aaj isse bachna.', 1]);
+  if (h >= 19 && !checks[dayKey(Date.now())]) out.push(['Aaj ka din kaise gaya?', '"Aaj" tab mein 30 second mein likho — achha kya kiya, galti kya hui.', 0]);
   const week = [...Array(7)].map((_, i) => sum(dayEntries(dayKey(Date.now() - i * 864e5))).cal).filter(x => x > 0);
   if (week.length >= 4) {
     const avg = Math.round(week.reduce((a, b) => a + b, 0) / week.length);
     const hi = avg > c.target * 1.1, lo = avg < c.target * .8;
     out.push([`Hafte ka average: ${avg} kcal`, hi ? 'Average target se upar hai — snacks aur meethe par nazar rakho.' : lo ? 'Average target se kaafi kam hai. Bahut kam khana bhi theek nahi — teeno time poora khana lo.' : 'Achha chal raha hai, aise hi rakho.', hi || lo ? 1 : 0]);
   }
-  out.push(['Paani', 'Din mein 8–10 glass paani piyo. Kai baar pyaas bhookh jaisi lagti hai.', 0]);
+  const wg = waterGoal(), wn = waterToday() * GLASS;
+  if (h >= 15 && wn < wg * .5) out.push([`Paani kam piya (${(wn / 1000).toFixed(1)} / ${(wg / 1000).toFixed(1)} L)`, 'Har ghante 1 glass piyo. Kai baar pyaas bhookh jaisi lagti hai.', 1]);
+  else out.push([`Paani: roz ${(wg / 1000).toFixed(1)} litre`, `Lagbhag ${Math.ceil(wg / GLASS)} glass — "Aaj" tab par +1 glass dabate raho.`, 0]);
   return out;
 }
 function renderDiet() {
+  $('#calCard').innerHTML = calHTML();
   $('#sugg').innerHTML = suggestions().map(([b, s, a]) => `<div class="sug${a ? ' alert' : ''}"><b>${b}</b><span>${s}</span></div>`).join('');
   drawProbGrid();
   const c = calc(), P = PLAN[(profile && profile.diet) || 'veg'], ap = activeProbs();
@@ -1042,6 +1185,420 @@ function saveProblems() {
   toast(activeProbs().length ? 'Diet plan problem ke hisaab se set ho gaya' : 'Koi problem nahi chuni — normal plan');
   $('#plan').scrollIntoView({behavior: 'smooth', block: 'start'});
 }
+/* ---------- Paani (wazan ke hisaab se) ---------- */
+const GLASS = 250;
+let water = Object.assign({goal: 0, ok: false, log: {}}, LS.get('cd_water', {}));
+function waterSuggest() {
+  if (hasProb('kidney')) return 0;                                   // kidney: doctor tay karenge
+  const w = profile ? profile.weight : 65;
+  let ml = w * 35 + (profile && profile.activity >= 1.55 ? 500 : 0) + (hasProb('preg') ? 300 : 0);
+  return Math.round(Math.min(4500, Math.max(2000, ml)) / 100) * 100;
+}
+const waterGoal = () => water.goal || waterSuggest() || 2500;
+const waterToday = () => water.log[dayKey(Date.now())] || 0;
+function saveWater() {
+  const keep = Object.keys(water.log).sort().slice(-60); const l = {}; keep.forEach(k => { l[k] = water.log[k]; }); water.log = l;
+  LS.set('cd_water', water);
+}
+function waterHTML() {
+  const sug = waterSuggest(), g = waterGoal(), n = waterToday(), gl = Math.ceil(g / GLASS), pct = Math.min(100, n * GLASS / g * 100);
+  const ask = sug && (!water.ok || Math.abs(sug - water.goal) / sug > .1);
+  return `<div class="wcard"><div class="wh"><b>💧 Aaj ka paani</b><span>${n} / ${gl} glass (${(n * GLASS / 1000).toFixed(2)} / ${(g / 1000).toFixed(1)} L)</span></div>
+    <div class="nb"><i style="width:${pct}%;background:#3B8FD9"></i></div>
+    <div class="row"><button class="btn" data-w="-1" aria-label="1 glass kam">−</button><button class="btn primary" data-w="1">+1 glass piya (250 ml)</button></div>
+    ${ask ? `<div class="wconf">Aapke wazan (${profile ? profile.weight + ' kg' : 'andaza'}) ke hisaab se roz <b>${(sug / 1000).toFixed(1)} litre</b> (~${Math.ceil(sug / GLASS)} glass) paani sahi hai. Yahi target rakhein?
+      <div class="row"><button class="btn primary" data-wok="${sug}">✓ Haan, theek hai</button><button class="btn" data-wedit="1">✏️ Apna likho</button></div></div>`
+    : !sug && !water.goal ? `<div class="wconf">Kidney problem mein roz kitna paani — yeh doctor batate hain. Doctor ka bataya target daalo. <div class="row"><button class="btn" data-wedit="1">✏️ Target likho</button></div></div>` : ''}</div>`;
+}
+function renderWater() { $('#waterBox').innerHTML = waterHTML(); }
+
+/* ---------- Calorie hisaab ---------- */
+function calHTML() {
+  if (!profile) return '<p class="muted" style="margin:0">Settings mein profile bharo — yahan aapka poora calorie hisaab dikhega.</p>';
+  const c = calc();
+  const rows = [['Aaram mein kharch (BMR)', c.bmr], ['Wazan same rakhne ke liye', c.tdee]];
+  if (!c.preg) rows.push(['Halka wazan kam (~¼ kg / hafta)', c.lose1], ['Wazan kam (~½ kg / hafta)', c.lose2], ['Tez wazan kam (~¾ kg / hafta)', c.lose3]);
+  rows.push(['Wazan badhane ke liye (~¼ kg / hafta)', c.gain]);
+  const wg = waterGoal();
+  return `<table class="needs" style="margin-top:0">${rows.map(([l, v], i) => `<tr${i && v === c.target ? ' class="cur"' : ''}><td>${l}</td><td>${v} kcal</td></tr>`).join('')}</table>
+    <p class="small" style="margin:8px 0 0">Aapka abhi ka target: <b style="color:var(--leaf-deep)">${c.target} kcal / din</b>. ${c.preg ? '' : `Isse kam (${c.floor} kcal se neeche) khana doctor ki salah ke bina safe nahi.`}<br>Protein kam se kam ${c.protein} g • Paani ${(wg / 1000).toFixed(1)} L roz</p>`;
+}
+
+/* ---------- "Kya kha sakta hu?" (photo / naam se AI salah) ---------- */
+let ask = null;
+function openAsk() { ask = {b64: '', url: '', res: null}; drawAsk(''); }
+function drawAsk(q) {
+  openSheet(`<h3>🤔 Kya kha sakta hu?</h3>
+    <p class="muted small" style="margin-top:-4px">Jo khana hai uski photo lo — jaise pista, mithai, namkeen ka packet. AI batayega kitna khana theek hai, ya mana karke badle mein kya khayein.</p>
+    ${ask.url ? `<img class="thumb big" src="${ask.url}" alt="Chuni hui khane ki photo"><button class="btn full" id="askClear" style="margin:-4px 0 6px">Photo badlo</button>`
+      : `<div class="row"><button class="btn primary" id="askCam">📷 Photo lo</button><button class="btn" id="askGal">🖼️ Gallery</button></div>`}
+    <label class="field">Sawaal (optional)<input id="askQ" value="${esc(q)}" placeholder="Jaise: kitne pista kha sakta hu?"></label>
+    <p class="muted small">Photo nahi hai? Sawaal mein item ka naam likh do (jaise "2 gulab jamun").</p>
+    <button class="btn primary full" id="askGo">Salah lo</button>`);
+}
+async function runAsk() {
+  const q = $('#askQ').value.trim();
+  if (!ask.b64 && !q) { toast('Photo lo ya item ka naam likho'); return; }
+  if (!hasKey()) { toast('Settings mein AI key daalo'); return; }
+  const me = ask;
+  openSheet(`<div class="scanhead">${ask.url ? `<img class="thumb" src="${ask.url}" alt="">` : ''}<div><h3>Soch raha hai…</h3><p class="muted small">Aapke aaj ke khane aur target ke hisaab se salah ban rahi hai</p><div class="loader"></div></div></div>`);
+  const c = calc(), t = sum(dayEntries(dayKey(Date.now()))), n = needs(), ap = activeProbs(), now = new Date();
+  const dietTxt = {veg: 'lacto-vegetarian', jain: 'strict Jain (no onion, garlic, potato or any root vegetable, no eggs or meat, nothing after sunset)', egg: 'vegetarian plus eggs', nonveg: 'non-vegetarian'}[(profile && profile.diet) || 'veg'];
+  const prompt = `You are a friendly, careful Indian dietitian. ${ask.b64 ? 'The image shows the food the user wants to eat.' : ''} ${q ? 'User says: "' + q + '".' : 'User asks: can I eat this now, and how much?'}
+Person: ${profile ? `${profile.gender === 'm' ? 'male' : 'female'}, age ${profile.age}, ${profile.height} cm, ${profile.weight} kg, goal: ${{lose: 'lose weight', keep: 'maintain weight', gain: 'gain weight'}[profile.goal]}` : 'profile unknown'}. Diet type: ${dietTxt}.
+${ap.length ? 'Health problems: ' + ap.map(probLabel).join('; ') + '.' : ''}
+${habitsTxt()}${healthTxt()}
+Today so far: target ${c.target} kcal, eaten ${Math.round(t.cal)} kcal, remaining ${Math.max(0, Math.round(c.target - t.cal))} kcal; protein ${Math.round(t.p)}/${n.p} g; sodium ${Math.round(t.na)}/${n.na} mg; sugar-type carbs matter if diabetic. Time now: ${now.getHours()}:${pad(now.getMinutes())}.
+Decide: should they eat it now, and exactly how much? If it is not suitable (health problem, diet type rules, too much sugar/salt/fat, or too few calories left), verdict "nahi" and give healthier substitutes. If okay only in small amount, verdict "thoda". Never advise stopping medicines.
+Reply ONLY valid JSON:
+{"item":"short Hinglish name","verdict":"haan|thoda|nahi","qty":"how much to eat now in household units with grams, e.g. 10-12 pc (15 g); empty if nahi","calories":0,"protein_g":0,"carbs_g":0,"fat_g":0,"sodium_mg":0,"magnesium_mg":0,"potassium_mg":0,"zinc_mg":0,"vitamin_d_mcg":0,"vitamin_c_mg":0,"why":["2-3 short Hinglish reasons"],"substitutes":["2-4 better options with quantity, Hinglish"],"tip":"one short practical Hinglish tip"}
+Nutrient numbers are for the suggested qty only. If the image has no food, item "" and verdict "nahi".`;
+  try {
+    const j = parseJSON(await aiCall(prompt, ask.b64 || null, 1500));
+    if (ask !== me) return;
+    me.res = j; drawAskResult(j, q);
+  } catch (e) {
+    if (ask !== me) return;
+    openSheet(`<h3>Salah nahi mil payi</h3><p class="err small">${esc(e.message === 'NOKEY' ? 'API key nahi mili' : e.message)}</p><button class="btn primary full" id="askRetry">Dobara try karo</button>`);
+    me.q = q;
+  }
+}
+function drawAskResult(j, q) {
+  const v = j.verdict === 'haan' ? ['v-yes', '✅ Kha sakte ho'] : j.verdict === 'thoda' ? ['v-mid', '⚠️ Thoda sa hi khao'] : ['v-no', '❌ Abhi mat khao'];
+  const kc = Math.round(+j.calories || 0), canAdd = j.verdict !== 'nahi' && kc > 0 && j.item;
+  openSheet(`${ask.url ? `<img class="thumb big" src="${ask.url}" alt="Khane ki photo">` : ''}
+    <h3>${esc(j.item || 'Item pehchana nahi gaya')}</h3>
+    <div class="verdict ${v[0]}"><div class="vt">${v[1]}</div>${j.qty ? `<div class="vq">${esc(j.qty)}${kc ? ` — ~${kc} kcal` : ''}</div>` : ''}</div>
+    ${Array.isArray(j.why) && j.why.length ? `<b>Kyun?</b><ul class="asklist">${j.why.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+    ${Array.isArray(j.substitutes) && j.substitutes.length ? `<b>${j.verdict === 'nahi' ? 'Iske badle yeh khao' : 'Aur behtar option'}</b><ul class="asklist">${j.substitutes.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+    ${j.tip ? `<p class="note">💡 ${esc(j.tip)}</p>` : ''}
+    <div class="row">${canAdd ? '<button class="btn primary" id="askAdd">➕ Diary mein jodo</button>' : ''}<button class="btn" id="askNew">Naya sawaal</button></div>
+    <p class="muted small">AI ki salah andaza hai. Bimari mein doctor / dietitian ki baat maano.</p>`);
+}
+function addAskToDiary() {
+  const j = ask && ask.res; if (!j) return;
+  const now = Date.now();
+  entries.push({id: uid(), ts: now, meal: mealFromTime(new Date().getHours()), name: j.item, portion: j.qty || '', src: 'ask',
+    cal: Math.round(+j.calories || 0), p: r1(j.protein_g), c: r1(j.carbs_g), f: r1(j.fat_g), na: Math.round(+j.sodium_mg || 0), mg: Math.round(+j.magnesium_mg || 0),
+    kp: Math.round(+j.potassium_mg || 0), zn: r1(j.zinc_mg), vd: r1(j.vitamin_d_mcg), vc: Math.round(+j.vitamin_c_mg || 0)});
+  saveEntries(); closeSheet(); ask = null; renderAll(); toast('Diary mein jod diya');
+}
+
+/* ---------- App guide (tour) ---------- */
+const TOUR = [
+  ['👋', 'Calorie Diagnosis mein swagat hai', ['Yeh app aapka roz ka khana, paani aur wazan dekh ke <b>wazan kam karne</b> mein madad karta hai.', 'Sirf 6 chhoti baatein — 1 minute mein samajh lo.']],
+  ['📷', 'Khana jodo', ['<b>Photo khicho / Gallery</b>: thali ki photo do — AI har cheez ki calorie aur poshan nikaalega.', 'Portion <b>− / +</b> se theek karo, phir <b>"Diary mein jodo"</b>.', '<b>Khud likho</b>: list se roti, dal jaisa item chuno.']],
+  ['🤔', 'Khane se pehle pucho', ['<b>"Kya kha sakta hu?"</b> mein photo lo — jaise pista, mithai, namkeen.', 'App batayega: ✅ kha sakte ho / ⚠️ thoda sa / ❌ abhi mat khao — aur <b>kitna</b>.', 'Mana kare to <b>badle mein kya khayein</b> woh bhi batayega.']],
+  ['✅', 'Roz ke kaam (1 minute)', ['💧 Har glass paani par <b>"+1 glass"</b> dabao.', '⚖️ Hafte mein 1 baar <b>wazan daalo</b> — kitna kam hua dikhega.', '📝 Raat ko <b>"Aaj ka din kaise gaya"</b> — galtiyan <span style="color:var(--chili);font-weight:700">laal line</span> mein dikhengi.']],
+  ['🥗', 'Diet tab', ['🔥 Aapka <b>calorie hisaab</b> aur 🩺 <b>problem chart</b>.', '🤖 Roz <b>1 baar AI se naya diet plan</b> — raat 12 baje phir khulta hai.', '📤 Plan <b>WhatsApp</b> par share bhi kar sakte ho.']],
+  ['⚙️', 'History aur Settings', ['📅 <b>History</b>: pichhle din ka khana, poshan aur hisaab.', '⚙️ <b>Settings</b>: profile, dawai, backup.', 'Upar <b>?</b> button se yeh guide kabhi bhi dobara dekho.']]
+];
+let tourI = 0;
+function openTour() { tourI = 0; $('#tour').hidden = false; document.body.style.overflow = 'hidden'; drawTour(); }
+function closeTour() { $('#tour').hidden = true; LS.set('cd_tour', 1); if ($('#onb').hidden && $('#quiz').hidden) document.body.style.overflow = ''; }
+function drawTour() {
+  const [ic, t, lines] = TOUR[tourI], last = tourI === TOUR.length - 1;
+  $('#tourIn').innerHTML = `<div class="qtop"><span class="qn">${tourI + 1} / ${TOUR.length}</span><button class="qb" data-tx="1" aria-label="Band karo">×</button></div>
+    <div class="tour-card"><div class="tbig">${ic}</div><h2>${t}</h2><ul>${lines.map(l => `<li>${l}</li>`).join('')}</ul></div>
+    <div class="dots">${TOUR.map((_, i) => `<i class="${i === tourI ? 'on' : ''}"></i>`).join('')}</div>
+    <div class="row">${tourI ? '<button class="btn" data-tp="1">← Wapas</button>' : ''}<button class="btn primary" data-tn="1">${last ? '✅ Samajh gaya, shuru karo' : 'Aage →'}</button></div>`;
+  $('#tour').scrollTop = 0;
+}
+$('#tourIn').addEventListener('click', e => {
+  if (e.target.closest('[data-tx]')) closeTour();
+  else if (e.target.closest('[data-tp]')) { tourI--; drawTour(); }
+  else if (e.target.closest('[data-tn]')) { if (tourI === TOUR.length - 1) closeTour(); else { tourI++; drawTour(); } }
+});
+function maybeTour() { if (!LS.get('cd_tour', 0) && profile && $('#quiz').hidden && $('#onb').hidden) openTour(); }
+
+/* ---------- Aaj ke kaam (patti) ---------- */
+function todoHTML() {
+  const k = dayKey(Date.now()), n = dayEntries(k).length, wg = Math.ceil(waterGoal() / GLASS), w = waterToday(), last = wlog[wlog.length - 1];
+  const wtOk = last && (Date.now() - new Date(last.d).getTime()) <= 7 * 864e5;
+  const items = [['s-add', '🍽️', 'Khana', n ? n + ' item' : 'jodo', n > 0], ['waterBox', '💧', 'Paani', `${w}/${wg}`, w >= wg], ['weightBox', '⚖️', 'Wazan', wtOk ? 'ho gaya' : 'daalo', wtOk], ['checkBox', '📝', 'Din', checks[k] ? 'likh diya' : 'raat ko', !!checks[k]]];
+  return items.map(([id, ic, l, sub, ok]) => `<button class="${ok ? 'done' : ''}" data-jumpt="${id}"><span>${ok ? '✅' : ic}</span><b>${l}</b><br>${sub}</button>`).join('');
+}
+function nutOkCount(t) {
+  const n = needs(); let ok = 0;
+  NUT.forEach(d => { const v = t[d.k] || 0; if (d.type === 'max' ? (v > 0 && v <= n[d.k]) : v >= n[d.k] * .9) ok++; });
+  return ok;
+}
+/* ---------- Sehat (dawai / allergy) — AI ke liye ---------- */
+function healthTxt() {
+  if (!profile) return '';
+  const m = (profile.meds || '').trim(), a = (profile.allergy || '').trim(), o = (profile.otherIll || '').trim();
+  return (m ? `Current medicines: ${m.replace(/\n+/g, '; ')} — consider food-medicine timing/interactions (e.g. thyroid tablet on empty stomach, diabetes medicine with meals); never suggest stopping or changing medicines. ` : '')
+    + (a ? `Food allergies / not suitable: ${a} — NEVER suggest these, and warn if the food contains them. ` : '')
+    + (o ? `Other conditions: ${o}. ` : '');
+}
+
+/* ---------- Aadatein ---------- */
+const BAD_HABITS = [['sweet', 'Meetha / mithai zyada'], ['fried', 'Tala hua / namkeen'], ['late', 'Raat ko der se khana'], ['snack', 'Baar-baar snacks'], ['cold', 'Cold drink / packet juice'], ['chai', 'Cheeni wali chai 2+ cup'], ['outside', 'Bahar ka khana / fast food'], ['water', 'Paani kam peena'], ['skip', 'Nashta skip karna'], ['stress', 'Tension / bore hone par khana'], ['portion', 'Ek baar mein zyada khana'], ['screen', 'TV / mobile dekhte hue khana']];
+const GOOD_HABITS = [['walk', 'Roz walk / exercise'], ['time', 'Time par khana'], ['salad', 'Roz salad / sabzi'], ['fruit', 'Roz fal'], ['water', 'Paani achha peete ho'], ['home', 'Zyada ghar ka khana'], ['sleep', 'Neend poori'], ['niyam', 'Upvas / niyam se khana']];
+const HABIT_TIPS = {sweet: 'Meethe ki talab ho to 1 khajoor ya thoda fal lo, mithai nahi.', fried: 'Tala hua hafte mein 1 baar tak. Namkeen ki jagah bhuna chana ya makhana.', late: 'Raat ka khana sone se 2–3 ghante pehle khatam karo.', snack: 'Snack ka time fix karo — shaam 5 baje, sirf 1 katori.', cold: 'Cold drink ki jagah chaas ya nimbu paani (kam cheeni).', chai: 'Chai mein cheeni aadhi karo, phir dheere-dheere band.', outside: 'Bahar khana pade to roti-dal-sabzi chuno, tala hua nahi.', water: 'Har ghante 1 glass paani — phone mein alarm laga lo.', skip: 'Nashta skip mat karo — isse baad mein zyada bhookh lagti hai.', stress: 'Tension mein khane se pehle 10 min walk ya 1 glass paani.', portion: 'Choti plate lo, pehle salad khao, phir roti.', screen: 'TV / mobile band karke khao — dhyan se khaane par kam khaate hain.', nowalk: 'Kal 20–30 min walk zaroor — khane ke baad 10 min bhi chalega.'};
+const hLabel = (list, id) => (list.find(x => x[0] === id) || [id, id])[1];
+function habitsTxt() {
+  if (!profile) return '';
+  const b = (profile.bad || []).map(id => hLabel(BAD_HABITS, id)), g = (profile.good || []).map(id => hLabel(GOOD_HABITS, id));
+  return (b.length ? 'Bad habits to gently fix: ' + b.join(', ') + '. ' : '') + (g.length ? 'Good habits to keep: ' + g.join(', ') + '. ' : '') + (profile.sleep ? 'Sleep: ' + profile.sleep + ' hours. ' : '');
+}
+
+/* ---------- BMI + wazan ---------- */
+const bmiOf = (kg, cm) => kg / Math.pow(cm / 100, 2);
+const bmiCat = b => b < 18.5 ? ['Kam wazan', 'var(--haldi)'] : b < 23 ? ['Sahi wazan', 'var(--leaf)'] : b < 27.5 ? ['Zyada wazan', 'var(--haldi)'] : ['Bahut zyada wazan (motapa)', 'var(--chili)'];
+const healthyRange = cm => [Math.round(18.5 * Math.pow(cm / 100, 2)), Math.round(22.9 * Math.pow(cm / 100, 2))];   // Asian cut-off
+function goalEta(P) {
+  P = P || profile; if (!P || !P.targetWeight || P.goal === 'keep') return null;
+  const c = calc(P), diff = P.goal === 'lose' ? P.weight - P.targetWeight : P.targetWeight - P.weight;
+  const kcalDay = P.goal === 'lose' ? c.tdee - c.target : c.target - c.tdee;
+  if (diff <= 0 || kcalDay <= 0) return null;
+  const weeks = Math.ceil(diff / (kcalDay * 7 / 7700)), d = new Date(); d.setDate(d.getDate() + weeks * 7);
+  return {weeks, date: d, diff};
+}
+let wlog = LS.get('cd_wlog', []);
+function logWeight(kg) {
+  const k = dayKey(Date.now()); wlog = wlog.filter(x => x.d !== k); wlog.push({d: k, kg}); wlog = wlog.slice(-400); LS.set('cd_wlog', wlog);
+}
+function weightHTML() {
+  if (!profile) return '';
+  const P = profile, st = P.startWeight || P.weight, tg = P.targetWeight, eta = goalEta(), last = wlog[wlog.length - 1];
+  const b = bmiOf(P.weight, P.height), cat = bmiCat(b);
+  let prog = '', info = '';
+  if (tg && P.goal !== 'keep') {
+    const total = Math.abs(st - tg), done = P.goal === 'lose' ? st - P.weight : P.weight - st, left = Math.abs(P.weight - tg);
+    prog = `<div class="nb" style="margin:8px 0"><i style="width:${total ? Math.max(0, Math.min(100, done / total * 100)) : 0}%;background:var(--leaf)"></i></div>`;
+    info = `${done > 0 ? `<b style="color:var(--leaf)">${r1(done)} kg ${P.goal === 'lose' ? 'kam' : 'zyada'} hua 🎉</b> • ` : ''}${r1(left)} kg baaki${eta ? ` • ~${eta.weeks} hafte (${MONTHS[eta.date.getMonth()]} ${eta.date.getFullYear()} tak)` : ''}`;
+  }
+  const stale = !last || (Date.now() - new Date(last.d).getTime()) > 7 * 864e5;
+  return `<div class="wcard"><div class="wh"><b>⚖️ Wazan</b><span>${tg && P.goal !== 'keep' ? `shuru ${st} → target ${tg} kg` : 'goal: wazan same'}</span></div>
+    <div><span class="wtbig">${P.weight} kg</span> <span class="small" style="color:${cat[1]};font-weight:600">BMI ${r1(b)} — ${cat[0]}</span></div>
+    ${prog}<div class="small">${info}</div>
+    ${stale ? '<div class="ci-line ci-bad" style="margin-top:8px">Is hafte wazan nahi daala</div>' : ''}
+    <button class="btn full" data-wt="1">⚖️ Aaj ka wazan daalo</button></div>`;
+}
+function renderWeight() { $('#weightBox').innerHTML = weightHTML(); }
+function askWeight() {
+  const v = prompt('Aaj ka wazan kitna hai? (kg)', profile ? profile.weight : '');
+  if (v === null) return;
+  const kg = r1(parseFloat(String(v).replace(',', '.')));
+  if (!(kg >= 25 && kg <= 250)) { toast('25 se 250 kg ke beech likho'); return; }
+  const P = profile; P.weight = kg; LS.set('cd_profile', P); logWeight(kg);
+  if (P.targetWeight && P.goal !== 'keep' && (P.goal === 'lose' ? kg <= P.targetWeight : kg >= P.targetWeight)) toast('Badhai ho! Target wazan tak pahunch gaye 🎉🎉');
+  else toast('Wazan save ho gaya — calorie target naye wazan se');
+  fillSettings(); renderAll();
+}
+
+/* ---------- Aaj ka din kaise gaya (good hari, galti laal line) ---------- */
+let checks = LS.get('cd_checkin', {});
+const CI_GOOD = ['Walk / exercise ki', 'Ghar ka khana khaya', 'Time par khana', 'Meetha nahi khaya', 'Salad / fal khaya', 'Jaldi soya'];
+const CI_BAD = [['sweet', 'Meetha khaya'], ['fried', 'Tala hua / namkeen khaya'], ['outside', 'Bahar ka khana'], ['late', 'Raat ko der se khaya'], ['portion', 'Zyada kha liya'], ['nowalk', 'Walk nahi ki'], ['cold', 'Cold drink / juice piya'], ['stress', 'Tension mein khaya']];
+const MOODS = [['good', '😊 Achha'], ['ok', '😐 Theek-thaak'], ['bad', '😞 Kharab']];
+function autoLines(k) {
+  const t = sum(dayEntries(k)), c = calc(), n = needs(), g = [], b = [];
+  if (t.cal) {
+    if (t.cal <= c.target) g.push(`Calorie target ke andar (${Math.round(t.cal)} / ${c.target})`); else b.push(`Target se ${Math.round(t.cal - c.target)} kcal zyada khaya`);
+    if (t.p >= n.p * .9) g.push('Protein poora'); else if (t.p < n.p * .6) b.push(`Protein kam (${Math.round(t.p)} / ${n.p} g)`);
+    if (t.na > n.na) b.push(`Namak zyada (${Math.round(t.na)} mg)`);
+  }
+  const w = (water.log[k] || 0) * GLASS, wg = waterGoal();
+  if (w >= wg) g.push('Paani poora piya'); else if (w < wg * .6) b.push(`Paani kam (${(w / 1000).toFixed(1)} / ${(wg / 1000).toFixed(1)} L)`);
+  return {g, b};
+}
+function checkHTML(k, editable) {
+  const ci = checks[k];
+  if (!ci) return editable ? `<div class="wcard"><div class="wh"><b>📝 Aaj ka din kaise gaya?</b></div><p class="small muted" style="margin:0 0 4px">Din ke aakhir mein 30 second — kya achha kiya, kya galti hui.</p><button class="btn primary full" data-ci="${k}">Aaj ka hisaab likho</button></div>` : '';
+  const a = autoLines(k), good = [...a.g, ...(ci.good || [])], bad = [...a.b, ...(ci.bad || []).map(id => hLabel(CI_BAD, id))];
+  const mood = (MOODS.find(m => m[0] === ci.mood) || ['', ''])[1];
+  return `<div class="wcard"><div class="wh"><b>📝 ${k === dayKey(Date.now()) ? 'Aaj' : 'Us din'} ka din ${mood ? '— ' + mood : ''}</b>${editable ? `<button class="btn" data-ci="${k}" style="padding:4px 10px;font-size:.8rem">Badlo</button>` : ''}</div>
+    ${good.map(x => `<div class="ci-line ci-good">✓ ${esc(x)}</div>`).join('')}${bad.map(x => `<div class="ci-line ci-bad">✗ ${esc(x)}</div>`).join('')}
+    ${ci.note ? `<p class="small" style="margin:6px 0 0">📝 ${esc(ci.note)}</p>` : ''}</div>`;
+}
+let ciDraft = null;
+function openCheck(k) { ciDraft = Object.assign({k, mood: '', good: [], bad: [], note: ''}, JSON.parse(JSON.stringify(checks[k] || {})), {k}); drawCheck(); }
+function drawCheck() {
+  const d = ciDraft, a = autoLines(d.k);
+  openSheet(`<h3>📝 ${d.k === dayKey(Date.now()) ? 'Aaj' : fmtDay(d.k)} ka din kaise gaya?</h3>
+    <div class="qchips">${MOODS.map(([id, l]) => `<button class="qchip${d.mood === id ? ' on' : ''}" data-cm="${id}">${l}</button>`).join('')}</div>
+    ${a.g.length || a.b.length ? `<b class="small">App ne khud dekha:</b>${a.g.map(x => `<div class="ci-line ci-good">✓ ${esc(x)}</div>`).join('')}${a.b.map(x => `<div class="ci-line ci-bad">✗ ${esc(x)}</div>`).join('')}` : ''}
+    <b style="display:block;margin-top:12px">✓ Aaj achha kya kiya?</b>
+    <div class="qchips" style="margin-top:6px">${CI_GOOD.map(x => `<button class="qchip${d.good.includes(x) ? ' on' : ''}" data-cg="${esc(x)}">${x}</button>`).join('')}</div>
+    <b style="display:block;color:var(--chili)">✗ Aaj kya galti hui?</b>
+    <div class="qchips" style="margin-top:6px">${CI_BAD.map(([id, x]) => `<button class="qchip bad${d.bad.includes(id) ? ' on' : ''}" data-cb="${id}">${x}</button>`).join('')}</div>
+    <label class="field">Kuch aur likhna hai? (optional)<input id="ciNote" value="${esc(d.note)}" placeholder="Jaise: shaadi mein gaya tha"></label>
+    <button class="btn primary full" id="ciSave">Save karo</button>`);
+}
+function saveCheck() {
+  const d = ciDraft; d.note = ($('#ciNote').value || '').trim();
+  checks[d.k] = {mood: d.mood, good: d.good, bad: d.bad, note: d.note, at: Date.now()};
+  const ks = Object.keys(checks).sort().slice(-120), nc = {}; ks.forEach(k => { nc[k] = checks[k]; }); checks = nc;
+  LS.set('cd_checkin', checks);
+  closeSheet(); renderAll();
+  const tip = d.bad.length ? HABIT_TIPS[d.bad[0]] : '';
+  toast(tip ? 'Kal ke liye: ' + tip : 'Shabash! Aise hi chalte raho 💪');
+}
+
+/* ---------- Profile ke sawaal (ek screen, ek sawaal) ---------- */
+let qa = {}, qi = 0, quizMode = 'start';
+const QUIZ = [
+  {k: 'intro'},
+  {k: 'name', q: 'Aapka naam kya hai?', type: 'text', ph: 'Jaise: Ramesh'},
+  {k: 'gender', q: 'Aap…', type: 'choice', opts: [['m', '👨 Purush'], ['f', '👩 Mahila']]},
+  {k: 'age', q: 'Aapki umar kitni hai?', type: 'num', unit: 'saal', min: 15, max: 90},
+  {k: 'height', q: 'Aapki height kitni hai?', type: 'height'},
+  {k: 'weight', q: 'Abhi aapka wazan kitna hai?', h: 'Subah khaali pet ka wazan sabse sahi hota hai.', type: 'num', unit: 'kg', min: 30, max: 250},
+  {k: 'goal', q: 'Aapka goal kya hai?', type: 'choice', opts: [['lose', '⬇️ Wazan kam karna'], ['keep', '⚖️ Wazan same rakhna'], ['gain', '⬆️ Wazan badhana']]},
+  {k: 'targetWeight', q: 'Kitne wazan tak pahunchna hai?', type: 'target', when: a => a.goal !== 'keep'},
+  {k: 'pace', q: 'Kitni tezi se wazan kam karna hai?', h: 'Dheere kam hua wazan zyada tikta hai.', type: 'choice', when: a => a.goal === 'lose', opts: [['slow', '🐢 Aaram se — ¼ kg / hafta'], ['normal', '🚶 Normal — ½ kg / hafta (sabse sahi)'], ['fast', '🏃 Tez — ¾ kg / hafta']]},
+  {k: 'diet', q: 'Aap kya khate ho?', type: 'choice', opts: [['veg', '🥦 Shakahari'], ['jain', '🙏 Jain'], ['egg', '🥚 Veg + anda'], ['nonveg', '🍗 Non-veg']]},
+  {k: 'activity', q: 'Aapka roz ka kaam kaisa hai?', type: 'choice', opts: [['1.2', '🪑 Zyada baithe rehte ho (dukaan, office)'], ['1.375', '🚶 Thoda chalna-phirna / halki walk'], ['1.55', '🏋️ Roz exercise / khade rehkar kaam'], ['1.725', '💪 Bahut mehnat wala kaam']]},
+  {k: 'sleep', q: 'Roz kitne ghante sote ho?', type: 'choice', opts: [['<6', '😴 6 ghante se kam'], ['6-7', '6–7 ghante'], ['7-8', '7–8 ghante'], ['8+', '8 ghante se zyada']]},
+  {k: 'bad', q: 'Inme se kaunsi aadatein aapmein hain?', h: 'Sach batao — isi se plan aur roz ki tips banengi. Jitni hain sab chuno.', type: 'multi', bad: true, opts: BAD_HABITS},
+  {k: 'good', q: 'Aur kaunsi achhi aadatein hain?', type: 'multi', opts: GOOD_HABITS},
+  {k: 'probs', q: 'Koi health problem hai?', h: 'Jitni hain sab chuno. Na ho to "Koi nahi" dabao.', type: 'multi', opts: Object.entries(PROB).map(([k, d]) => [k, d.name])},
+  {k: 'meds', q: 'Koi dawai (medicine) chal rahi hai?', h: 'Isse diet plan dawai ke time ke hisaab se banega. Dawai kabhi apne aap band mat karna.', type: 'meds'},
+  {k: 'allergy', q: 'Kisi khane se allergy hai, ya koi cheez suit nahi karti?', h: 'Na ho to khaali chhod ke Aage dabao.', type: 'textopt', ph: 'Jaise: moongfali, doodh, baingan'},
+  {k: 'otherIll', q: 'Koi aur bimari, operation ya taklif?', h: 'Jo upar ki list mein nahi thi. Na ho to khaali chhodo.', type: 'textopt', ph: 'Jaise: migraine, gallbladder operation 2023'},
+  {k: 'summary'}
+];
+const qSteps = () => QUIZ.filter(s => !s.when || s.when(qa));
+function openQuiz(mode) {
+  quizMode = mode; qi = 0;
+  const P = profile || {};
+  qa = {name: P.name || '', gender: P.gender || '', age: P.age || '', height: P.height || 0, weight: P.weight || '', goal: P.goal || '', targetWeight: P.targetWeight || '',
+    pace: P.pace || '', diet: P.diet || '', activity: P.activity ? String(P.activity) : '', sleep: P.sleep || '', bad: (P.bad || []).slice(), good: (P.good || []).slice(),
+    probs: problems.filter(x => x.k && x.k !== 'other').map(x => x.k), meds: P.meds || '', medsOn: P.meds ? 'y' : '', allergy: P.allergy || '', otherIll: P.otherIll || ''};
+  if (mode !== 'start') qi = 1;
+  $('#quiz').hidden = false; document.body.style.overflow = 'hidden'; drawQuiz();
+}
+function closeQuiz() { $('#quiz').hidden = true; if ($('#onb').hidden) document.body.style.overflow = ''; }
+function drawQuiz() {
+  const steps = qSteps(); qi = Math.max(0, Math.min(qi, steps.length - 1));
+  const st = steps[qi], total = steps.length - 2, num = Math.min(Math.max(qi, 1), total);
+  let body = '';
+  const top = st.k === 'intro' ? '' : `<div class="qtop"><button class="qb" data-qback="1" aria-label="Pichla sawaal">←</button><span class="qn">${st.k === 'summary' ? 'Aapki profile' : `Sawaal ${num} / ${total}`}</span>${quizMode !== 'start' ? '<button class="qb" data-qclose="1" aria-label="Band karo">×</button>' : ''}</div>
+    <div class="qprog"><i style="width:${st.k === 'summary' ? 100 : num / total * 100}%"></i></div>`;
+  if (st.k === 'intro') body = `<div style="text-align:center;padding-top:30px"><div style="font-size:3.2rem">🙏</div><h2 style="margin:10px 0">Namaste! Chaliye aapki profile banate hain</h2>
+    <p class="lead">${total} chhote sawaal, lagbhag 2 minute. Yeh sirf ek baar poochenge — isi se aapka calorie target, diet plan aur roz ki tips banengi.</p>
+    <button class="btn primary full" data-qnext="1" style="font-size:1.15rem;padding:15px">Shuru karo</button></div>`;
+  else if (st.type === 'text') body = `<p class="qq">${st.q}</p><input class="qinp" id="qv" value="${esc(qa[st.k])}" placeholder="${st.ph || ''}" autocomplete="off"><button class="btn primary full" data-qnext="1">Aage</button>`;
+  else if (st.type === 'num') body = `<p class="qq">${st.q}</p>${st.h ? `<p class="qh">${st.h}</p>` : ''}<div class="qunit"><input class="qinp" id="qv" type="number" inputmode="decimal" value="${qa[st.k]}" min="${st.min}" max="${st.max}"><span>${st.unit}</span></div><button class="btn primary full" data-qnext="1">Aage</button>`;
+  else if (st.type === 'height') {
+    const cm = qa.height || 165, tin = Math.round(cm / 2.54), ft = Math.floor(tin / 12), inch = tin % 12;
+    body = `<p class="qq">${st.q}</p>${qa.hcm ? `<div class="qunit"><input class="qinp" id="qcm" type="number" inputmode="numeric" value="${qa.height || ''}"><span>cm</span></div>`
+      : `<div class="qht"><select id="qft" aria-label="Feet">${[4, 5, 6, 7].map(f => `<option value="${f}" ${f === ft ? 'selected' : ''}>${f} feet</option>`).join('')}</select><select id="qin" aria-label="Inch">${[...Array(12).keys()].map(i => `<option value="${i}" ${i === inch ? 'selected' : ''}>${i} inch</option>`).join('')}</select></div>`}
+      <button class="qlink" data-qhcm="1">${qa.hcm ? 'Feet-inch mein daalna hai?' : 'cm mein daalna hai?'}</button><button class="btn primary full" data-qnext="1">Aage</button>`;
+  } else if (st.type === 'choice') body = `<p class="qq">${st.q}</p>${st.h ? `<p class="qh">${st.h}</p>` : ''}${st.opts.map(([v, l]) => `<button class="qopt${String(qa[st.k]) === v ? ' on' : ''}" data-qc="${v}">${l}</button>`).join('')}`;
+  else if (st.type === 'multi') body = `<p class="qq">${st.q}</p>${st.h ? `<p class="qh">${st.h}</p>` : ''}<div class="qchips">${st.opts.map(([v, l]) => `<button class="qchip${st.bad ? ' bad' : ''}${qa[st.k].includes(v) ? ' on' : ''}" data-qm="${v}">${l}</button>`).join('')}</div>
+    <div class="row"><button class="btn" data-qnone="1">Koi nahi</button><button class="btn primary" data-qnext="1">Aage</button></div>`;
+  else if (st.type === 'target') {
+    const [lo, hi] = healthyRange(qa.height), ph = qa.goal === 'lose' ? Math.max(hi, Math.round(qa.weight * .9)) : Math.round(+qa.weight + 5);
+    body = `<p class="qq">${st.q}</p><div class="qbox">Aapki height ke hisaab se <b>healthy wazan: ${lo}–${hi} kg</b>. Abhi aap <b>${qa.weight} kg</b> ho.${qa.goal === 'lose' && qa.weight - hi > 15 ? ' Pehle chhota target rakho (jaise ' + Math.round(qa.weight * .9) + ' kg) — pahunch ke aage badhao.' : ''}</div>
+      <div class="qunit"><input class="qinp" id="qv" type="number" inputmode="decimal" value="${qa.targetWeight}" placeholder="${ph}"><span>kg</span></div><button class="btn primary full" data-qnext="1">Aage</button>`;
+  } else if (st.type === 'meds') body = `<p class="qq">${st.q}</p><p class="qh">${st.h}</p>
+      <button class="qopt${qa.medsOn === 'n' ? ' on' : ''}" data-qmed="n">❌ Nahi, koi dawai nahi</button><button class="qopt${qa.medsOn === 'y' ? ' on' : ''}" data-qmed="y">💊 Haan, dawai chal rahi hai</button>
+      ${qa.medsOn === 'y' ? `<label class="field">Dawai ka naam, kitni aur kab (har dawai nayi line mein)<textarea class="qta" id="qv" placeholder="Jaise:&#10;Metformin 500 — subah-shaam khane ke baad&#10;Thyroxine 50 — subah khaali pet">${esc(qa.meds)}</textarea></label><button class="btn primary full" data-qnext="1">Aage</button>` : ''}`;
+  else if (st.type === 'textopt') body = `<p class="qq">${st.q}</p><p class="qh">${st.h}</p><textarea class="qta" id="qv" placeholder="${st.ph}">${esc(qa[st.k])}</textarea><button class="btn primary full" data-qnext="1">Aage</button>`;
+  else if (st.k === 'summary') body = quizSummary();
+  $('#quizIn').innerHTML = top + body; $('#quiz').scrollTop = 0;
+  const inp = $('#qv') || $('#qcm'); if (inp) setTimeout(() => inp.focus(), 50);
+}
+function quizProfile() {
+  return {name: qa.name, gender: qa.gender, age: +qa.age, height: +qa.height, weight: r1(+qa.weight), goal: qa.goal, targetWeight: qa.goal === 'keep' ? 0 : r1(+qa.targetWeight),
+    pace: qa.goal === 'lose' ? (qa.pace || 'normal') : '', diet: qa.diet, activity: +qa.activity, sleep: qa.sleep, bad: qa.bad, good: qa.good,
+    meds: qa.medsOn === 'y' ? qa.meds : '', allergy: qa.allergy, otherIll: qa.otherIll,
+    customTarget: 0, startWeight: (profile && profile.startWeight && quizMode !== 'start') ? profile.startWeight : r1(+qa.weight), quizAt: Date.now()};
+}
+function quizSummary() {
+  const P = quizProfile(), c = calc(P), b = bmiOf(P.weight, P.height), cat = bmiCat(b), [lo, hi] = healthyRange(P.height), eta = goalEta(P);
+  const wml = Math.round(Math.min(4500, Math.max(2000, P.weight * 35 + (P.activity >= 1.55 ? 500 : 0))) / 100) * 100;
+  return `<p class="qq">${esc(P.name || 'Aap')} ki profile ✅</p>
+    <table class="needs qsum"><tr><td>BMI</td><td style="color:${cat[1]}">${r1(b)} — ${cat[0]}</td></tr><tr><td>Healthy wazan</td><td>${lo}–${hi} kg</td></tr>
+    <tr><td>Wazan same rakhne ke liye</td><td>${c.tdee} kcal</td></tr><tr class="cur"><td>Aapka roz ka target</td><td>${c.target} kcal</td></tr>
+    ${P.targetWeight ? `<tr><td>Target wazan</td><td>${P.targetWeight} kg</td></tr>` : ''}
+    ${eta ? `<tr><td>Kab tak</td><td>~${eta.weeks} hafte (${MONTHS[eta.date.getMonth()]} ${eta.date.getFullYear()})</td></tr>` : ''}
+    <tr><td>Protein</td><td>${c.protein} g roz</td></tr><tr><td>Paani</td><td>${(wml / 1000).toFixed(1)} L roz</td></tr></table>
+    ${c.warn ? `<p class="small" style="color:var(--chili)">${c.warn}</p>` : ''}
+    ${P.bad.length ? `<b style="display:block;margin-top:12px">Sudharni hain:</b>${P.bad.map(id => `<div class="ci-line ci-bad">✗ ${hLabel(BAD_HABITS, id)}</div>`).join('')}` : ''}
+    ${P.good.length ? `<b style="display:block;margin-top:10px">Achhi aadatein:</b>${P.good.map(id => `<div class="ci-line ci-good">✓ ${hLabel(GOOD_HABITS, id)}</div>`).join('')}` : ''}
+    <b style="display:block;margin-top:12px">🩺 Sehat:</b>
+    <div class="qbox" style="margin-top:6px">${qa.probs.length ? 'Problem: ' + qa.probs.map(k => PROB[k].name).join(', ') + '<br>' : ''}${P.meds ? '💊 Dawai: ' + esc(P.meds).replace(/\n/g, ', ') + '<br>' : 'Koi dawai nahi<br>'}${P.allergy ? '⚠️ Allergy: ' + esc(P.allergy) + '<br>' : ''}${P.otherIll ? 'Aur: ' + esc(P.otherIll) : ''}</div>
+    ${P.meds ? '<p class="small" style="color:var(--chili);margin:0">Dawai apne aap band ya kam mat karna — app sirf khane ki salah deta hai.</p>' : ''}
+    <button class="btn primary full" data-qsave="1" style="font-size:1.1rem;padding:15px;margin-top:16px">✅ Sab sahi hai — shuru karo</button>`;
+}
+function quizCollect(st) {           // Aage dabane par jawab check + save
+  if (st.type === 'text') { const v = $('#qv').value.trim(); if (!v) { toast('Naam likho'); return false; } qa[st.k] = v; }
+  else if (st.type === 'num') { const v = parseFloat(String($('#qv').value).replace(',', '.')); if (!(v >= st.min && v <= st.max)) { toast(`${st.min} se ${st.max} ${st.unit} ke beech likho`); return false; } qa[st.k] = v; }
+  else if (st.type === 'height') {
+    const cm = qa.hcm ? +$('#qcm').value : Math.round((+$('#qft').value * 12 + +$('#qin').value) * 2.54);
+    if (!(cm >= 120 && cm <= 220)) { toast('Height sahi daalo'); return false; } qa.height = cm;
+  } else if (st.type === 'target') {
+    const v = parseFloat(String($('#qv').value).replace(',', '.')), [lo] = healthyRange(qa.height);
+    if (!(v >= 30 && v <= 250)) { toast('Target wazan kg mein likho'); return false; }
+    if (qa.goal === 'lose' && v >= qa.weight) { toast('Wazan kam karna hai to target abhi ke wazan se kam hona chahiye'); return false; }
+    if (qa.goal === 'lose' && v < lo) { toast(`Target ${lo} kg se kam rakhna sehat ke liye theek nahi`); return false; }
+    if (qa.goal === 'gain' && v <= qa.weight) { toast('Wazan badhana hai to target abhi se zyada hona chahiye'); return false; }
+    qa.targetWeight = v;
+  } else if (st.type === 'choice') { if (!qa[st.k]) { toast('Ek option chuno'); return false; } }
+  else if (st.type === 'meds') { const v = $('#qv').value.trim(); if (!v) { toast('Dawai ka naam likho, ya "Nahi" chuno'); return false; } qa.meds = v; }
+  else if (st.type === 'textopt') qa[st.k] = $('#qv').value.trim();
+  return true;
+}
+function saveQuiz() {
+  const P = quizProfile(), first = quizMode === 'start' || !profile;
+  profile = P; LS.set('cd_profile', profile); logWeight(P.weight);
+  const notes = {}; problems.forEach(x => { if (x.k) notes[x.k] = x.note; });
+  const others = problems.filter(x => (x.k === 'other' || !x.k) && (x.note || '').trim());
+  problems = [...qa.probs.map(k => ({k, note: notes[k] || ''})), ...others].slice(0, 6); while (problems.length < 6) problems.push({k: '', note: ''});
+  LS.set('cd_problems', problems);
+  closeQuiz(); fillSettings(); renderAll();
+  toast(first ? `Profile ban gayi! Aapka target: ${calc().target} kcal roz` : 'Profile update ho gayi');
+  if (!hasKey()) openOnb('start'); else maybeTour();
+}
+$('#quizIn').addEventListener('click', e => {
+  const steps = qSteps(), st = steps[qi], t = e.target;
+  if (t.closest('[data-qback]')) { if (qi > (quizMode === 'start' ? 0 : 1)) { qi--; drawQuiz(); } return; }
+  if (t.closest('[data-qclose]')) { closeQuiz(); return; }
+  if (t.closest('[data-qhcm]')) { qa.hcm = !qa.hcm; drawQuiz(); return; }
+  const md = t.closest('[data-qmed]'); if (md) { qa.medsOn = md.dataset.qmed; if (qa.medsOn === 'n') { qa.meds = ''; qi++; } drawQuiz(); return; }
+  const c = t.closest('[data-qc]'); if (c) { qa[st.k] = c.dataset.qc; if (st.k === 'goal' && c.dataset.qc === 'keep') qa.targetWeight = ''; qi++; drawQuiz(); return; }
+  const m = t.closest('[data-qm]'); if (m) { const v = m.dataset.qm, arr = qa[st.k]; const i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v); m.classList.toggle('on'); return; }
+  if (t.closest('[data-qnone]')) { qa[st.k] = []; qi++; drawQuiz(); return; }
+  if (t.closest('[data-qnext]')) { if (st.k === 'intro' || quizCollect(st)) { qi++; drawQuiz(); } return; }
+  if (t.closest('[data-qsave]')) saveQuiz();
+});
+$('#quizIn').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.target.id === 'qv' || e.target.id === 'qcm')) { const b = $('#quizIn [data-qnext]'); if (b) b.click(); } });
+
+/* ---------- AI plan: din mein sirf 1 baar, raat 12 baje reset ---------- */
+let lastSeen = LS.get('cd_seen', 0);
+const nowEff = () => Math.max(Date.now(), lastSeen);                    // ghadi peeche karne ka fayda nahi
+function touchSeen() { if (Date.now() > lastSeen) { lastSeen = Date.now(); LS.set('cd_seen', lastSeen); IDB.set('seen', lastSeen); } }
+let aiDayLock = LS.get('cd_aiday', '');
+const aiLockedToday = () => aiDayLock && aiDayLock === dayKey(nowEff());
+function msToMidnight() { const n = new Date(nowEff()), m = new Date(n); m.setHours(24, 0, 0, 0); return m - n; }
+function updateAiBtn() {
+  const b = $('#bAiPlan'); if (!b || b.dataset.busy) return;
+  if (aiLockedToday()) {
+    const ms = msToMidnight(), h = Math.floor(ms / 36e5), mi = Math.floor(ms % 36e5 / 6e4);
+    b.disabled = true;
+    b.innerHTML = `✅ Aaj ka plan ban gaya<br><small style="font-weight:500">Naya plan raat 12 baje ke baad (${h ? h + ' ghante ' : ''}${mi} min baaki)</small>`;
+  } else { b.disabled = false; b.textContent = '🤖 AI se aaj ka diet plan banao'; }
+}
+async function setAiDayLock() { aiDayLock = dayKey(nowEff()); LS.set('cd_aiday', aiDayLock); await IDB.set('aiday', aiDayLock); }
+async function loadLocks() {
+  lastSeen = Math.max(lastSeen, (await IDB.get('seen')) || 0); touchSeen();
+  const d = (await IDB.get('aiday')) || ''; if (d > aiDayLock) { aiDayLock = d; LS.set('cd_aiday', d); }
+  updateAiBtn();
+}
+/* plan ke poshan ki jaanch */
+const mapTotals = o => { o = o || {}; const g = k => +o[k] || 0; return {cal: g('calories'), p: g('protein_g'), c: g('carbs_g'), f: g('fat_g'), na: g('sodium_mg'), mg: g('magnesium_mg'), kp: g('potassium_mg'), zn: g('zinc_mg'), vd: g('vitamin_d_mcg'), vc: g('vitamin_c_mg')}; };
+function covGaps(t, n) {
+  if (!t.cal) return ['totals missing'];
+  const out = [];
+  [['p', 'protein'], ['mg', 'magnesium'], ['kp', 'potassium'], ['zn', 'zinc'], ['vc', 'vitamin C']].forEach(([k, l]) => { if (k === 'kp' && hasProb('kidney')) return; if (t[k] < n[k] * .8) out.push(l + ' LOW'); });
+  if (t.na > n.na * 1.1) out.push('sodium HIGH'); if (t.f > n.f * 1.2) out.push('fat HIGH'); if (t.c > n.c * 1.2) out.push('carbs HIGH');
+  return out;
+}
+
 /* ---------- AI plan: har baar naya, main dish 30 din mein max 3 baar ---------- */
 const normDish = x => String(x || '').toLowerCase().replace(/\(.*?\)/g, ' ')
   .replace(/\b(bina|kam|less|no)\s+(cheeni|sugar|namak|salt|tel|oil|ghee)\b/g, ' ')
@@ -1082,23 +1639,28 @@ async function sharePlan() {
   window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank');
 }
 function drawAiChart() {
+  updateAiBtn();
   if (!aiHave()) { $('#aiPlan').innerHTML = ''; return; }
   const meals = normMeals(aiChart.meals), tot = meals.reduce((a, m) => a + m.items.reduce((b, x) => b + x[2], 0), 0);
   const cnt = dishCounts(), full = Object.keys(cnt).filter(k => cnt[k] >= DISH_LIMIT);
   $('#aiPlan').innerHTML = `<h3 style="margin:6px 0 2px">AI diet plan</h3><p class="muted small" style="margin:0 0 8px">${esc(aiChart.made || '')}</p>` +
-    (!aiFresh() ? `<div class="warn">Profile, problem ya target badal gaya hai — naya plan banao.</div>` : '') +
+    (!aiFresh() ? `<div class="warn">Profile, problem ya target badal gaya hai — ${aiLockedToday() ? 'naya plan raat 12 baje ke baad banega.' : 'naya plan banao.'}</div>` : '') +
     meals.map(m => { const st = m.items.reduce((b, x) => b + x[2], 0);
       return `<div class="pslot"><div class="ph"><time>${esc(m.t)}</time><h3>${esc(m.title)}</h3><span>${st} kcal</span></div><ul>${m.items.map(x => { const n = normDish(x[0]), k = cnt[n] || 0;
         return `<li><span>${esc(x[0])} <small>${esc(x[1])}${!isStaple(n) && k ? `, mahine mein ${k}/${DISH_LIMIT} baar` : ''}</small></span><b>${x[2]}</b></li>`; }).join('')}</ul></div>`; }).join('') +
     `<p class="ptot">Kul lagbhag ${tot} kcal</p>` +
+    (aiChart.totals && aiChart.totals.cal ? `<h3 style="margin:14px 0 6px">Plan ka poshan — zaroorat vs plan</h3>${nutHTML(aiChart.totals, [])}` +
+      (aiChart.gaps && aiChart.gaps.length && aiChart.gaps[0] !== 'totals missing' ? `<p class="small" style="color:var(--chili)">Is plan mein poori tarah cover nahi hua: ${esc(aiChart.gaps.map(g => g.replace(' LOW', ' kam').replace(' HIGH', ' zyada')).join(', '))}. Upar ki salah ke hisaab se thoda jodo / ghatao.</p>` : '') : '') +
     (aiChart.avoid && aiChart.avoid.length ? `<div class="card"><h3>Kam / na khayein</h3><ul class="tips">${aiChart.avoid.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : '') +
     (aiChart.tips && aiChart.tips.length ? `<div class="card"><h3>Tips</h3><ul class="tips">${aiChart.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : '') +
     `<p class="muted small">Pichhle 30 din mein ${recentHist().length} AI plan bane. ${full.length ? full.length + ' dish apni 3 baar ki limit par hain — woh agle plans mein nahi aayengi.' : 'Koi dish abhi 3 baar ki limit par nahi.'}</p>`;
 }
 async function makeAiChart() {
+  if (aiLockedToday()) { toast('Aaj ka plan ban chuka hai — naya plan raat 12 baje ke baad'); updateAiBtn(); return; }
   if (!profile) { toast('Pehle profile bharo'); goTab('t-set'); return; }
   if (!hasKey()) { toast('Settings mein AI key daalo'); goTab('t-set'); return; }
   const c = calc(), btn = $('#bAiPlan'), ap = activeProbs(), n = needs();
+  btn.dataset.busy = '1';
   const dietTxt = {veg: 'lacto-vegetarian', jain: 'strict Jain (no onion, garlic, potato, carrot or any root/underground vegetable, no eggs or meat; last meal before sunset)', egg: 'vegetarian plus eggs', nonveg: 'non-vegetarian'}[profile.diet || 'veg'];
   const cnt = dishCounts();
   let banned = Object.keys(cnt).filter(k => cnt[k] >= DISH_LIMIT);
@@ -1108,33 +1670,40 @@ Person: ${profile.gender === 'm' ? 'male' : 'female'}, age ${profile.age}, heigh
 Diet type: ${dietTxt}. Daily calorie target: ${c.target} kcal (total within 5% of this). Protein at least ${c.protein} g.
 ${ap.length ? 'Health problems (adjust the whole plan for ALL of these, follow standard Indian dietary guidance, never suggest stopping medicines): ' + ap.map(probLabel).join('; ') + '.\n' : ''}${hasProb('kidney') ? 'Kidney problem: do NOT push high potassium or high protein foods; keep it conservative.\n' : ''}Nutrient guide: magnesium ${n.mg} mg, potassium ${hasProb('kidney') ? 'as per doctor' : '3500 mg'}, zinc ${n.zn} mg, vitamin C ${n.vc} mg; sodium under ${n.na} mg; carbs about ${n.c} g.
 Use simple, affordable foods from an Indian kitchen, Hinglish (Roman script) dish names, household quantities (katori, pc, glass). Write each dish as its own item with a clear name (e.g. "Moong dal chilla", "Lauki chana dal").
+COVER ALL NUTRIENTS for the full day: reach at least 90% of protein ${n.p} g, magnesium ${n.mg} mg, ${hasProb('kidney') ? '' : 'potassium ' + n.kp + ' mg, '}zinc ${n.zn} mg, vitamin C ${n.vc} mg; keep carbs about ${n.c} g and fat about ${n.f} g (not more); sodium not above ${n.na} mg. Vitamin D mostly comes from sunlight — add one sunlight tip. Use nuts/seeds, dals, sprouts, green leafy veg, curd, fruits smartly to cover the minerals.
+Give realistic "totals" for the whole day.
+${profile.targetWeight ? 'Target weight: ' + profile.targetWeight + ' kg. ' : ''}${habitsTxt()}${healthTxt()}Plan and tips should help fix the bad habits (e.g. early light dinner if late eating, sweet swap if sweets).
 Random seed for variety: ${Date.now() % 100000}.`;
-  const tail = `Reply with ONLY valid JSON: {"meals":[{"time":"7:30 AM","title":"Nashta","items":[{"food":"Moong dal chilla","qty":"2 pc","cal":220}]}],"avoid":["foods to limit for these problems, short Hinglish"],"tips":["3 to 5 short practical Hinglish tips"]}`;
+  const tail = `Reply with ONLY valid JSON: {"meals":[{"time":"7:30 AM","title":"Nashta","items":[{"food":"Moong dal chilla","qty":"2 pc","cal":220}]}],"totals":{"calories":0,"protein_g":0,"carbs_g":0,"fat_g":0,"sodium_mg":0,"magnesium_mg":0,"potassium_mg":0,"zinc_mg":0,"vitamin_d_mcg":0,"vitamin_c_mg":0},"avoid":["foods to limit for these problems, short Hinglish"],"tips":["3 to 5 short practical Hinglish tips"]}`;
   btn.disabled = true; btn.textContent = 'Naya plan ban raha hai…';
   try {
-    let j, md, bad = [];
+    let j, md, bad = [], tot = {}, gaps = [], fix = '';
     for (let attempt = 0; attempt < 3; attempt++) {
-      const rules = (banned.length ? `NOT ALLOWED (already used ${DISH_LIMIT} times this month, do not use these or close variants): ${banned.map(displayName).join(', ')}.\n` : '') +
+      const rules = fix + (banned.length ? `NOT ALLOWED (already used ${DISH_LIMIT} times this month, do not use these or close variants): ${banned.map(displayName).join(', ')}.\n` : '') +
         (recent.length ? `Also avoid these dishes from the last plans (want variety): ${recent.map(displayName).join(', ')}.\n` : '');
       j = parseJSON(await aiCall(base + '\n' + rules + tail, null, 3000));
       if (!Array.isArray(j.meals) || !j.meals.length) throw new Error('Plan sahi format mein nahi aaya, dobara try karo');
       md = mainDishes(j.meals);
       bad = md.dishes.filter(d => (cnt[d] || 0) >= DISH_LIMIT);
-      if (!bad.length) break;
-      banned = [...new Set([...banned, ...bad])];
+      tot = mapTotals(j.totals); gaps = covGaps(tot, n);
+      if (!bad.length && !gaps.length) break;
+      if (bad.length) banned = [...new Set([...banned, ...bad])];
+      fix = gaps.length ? `The previous plan was: ${gaps.join(', ')}. Fix this by changing foods / quantities.\n` : '';
     }
     if (bad.length) throw new Error('AI baar-baar limit wali dish de raha hai, thodi der baad dobara try karo');
     const d = new Date();
-    aiChart = {meals: j.meals, tips: j.tips || [], avoid: j.avoid || [], sig: probSig(), target: c.target, diet: profile.diet || 'veg', ts: Date.now(),
+    aiChart = {meals: j.meals, totals: tot, gaps, tips: j.tips || [], avoid: j.avoid || [], sig: probSig(), target: c.target, diet: profile.diet || 'veg', ts: Date.now(),
       made: 'Bana: ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ', ' + d.toLocaleTimeString('en-IN', {hour: 'numeric', minute: '2-digit'}) + ', ' + c.target + ' kcal' + (ap.length ? ', ' + ap.length + ' problem' : '')};
     aiHist = [...recentHist(), {ts: Date.now(), dishes: md.dishes, names: md.names}];
     LS.set('cd_aichart', aiChart); LS.set('cd_aihist', aiHist);
     drawAiChart();
-    toast('Naya diet plan ban gaya');
+    await setAiDayLock();
+    toast('Aaj ka diet plan ban gaya ✅');
   } catch (e) {
     toast(e.message === 'NOKEY' ? 'Settings mein AI key daalo' : e.message);
   }
-  btn.disabled = false; btn.textContent = '🤖 AI se naya diet plan banao';
+  delete btn.dataset.busy;
+  updateAiBtn();
 }
 
 /* ---------- IndexedDB: key ki copy + roz ka auto backup ---------- */
@@ -1145,7 +1714,7 @@ const IDB = {
   async set(k, v) { try { const db = await this.open(); return await new Promise(res => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = () => res(true); tx.onerror = () => res(false); }); } catch (e) { return false; } }
 };
 const apiCopy = () => ({provider: api.provider, geminiKey: api.geminiKey, claudeKey: api.claudeKey, geminiModel: api.geminiModel, claudeModel: api.claudeModel, locked: !!api.locked});
-const backupObj = () => ({app: 'calorie-diagnosis', version: VERSION, saved: Date.now(), profile, entries, aiChart, aiHist, problems, api: apiCopy()});
+const backupObj = () => ({app: 'calorie-diagnosis', version: VERSION, saved: Date.now(), profile, entries, aiChart, aiHist, problems, water, checks, wlog, api: apiCopy()});
 function applyBackup(j) {
   const ids = new Set(entries.map(e => e.id)); let n = 0;
   (j.entries || []).forEach(e => { if (!ids.has(e.id)) { entries.push(e); n++; } });
@@ -1153,6 +1722,9 @@ function applyBackup(j) {
   if (j.aiChart && Array.isArray(j.aiChart.meals)) { aiChart = j.aiChart; LS.set('cd_aichart', aiChart); }
   if (Array.isArray(j.aiHist)) { const t = new Set(aiHist.map(h => h.ts)); j.aiHist.forEach(h => t.has(h.ts) || aiHist.push(h)); aiHist.sort((a, b) => a.ts - b.ts); LS.set('cd_aihist', aiHist); }
   if (Array.isArray(j.problems)) { problems = j.problems.slice(0, 6); while (problems.length < 6) problems.push({k: '', note: ''}); LS.set('cd_problems', problems); }
+  if (j.checks) { checks = Object.assign({}, j.checks, checks); LS.set('cd_checkin', checks); }
+  if (Array.isArray(j.wlog)) { const m = {}; [...j.wlog, ...wlog].forEach(x => { m[x.d] = x; }); wlog = Object.values(m).sort((a, b) => a.d < b.d ? -1 : 1); LS.set('cd_wlog', wlog); }
+  if (j.water && j.water.log) { water.goal = water.goal || j.water.goal || 0; water.ok = water.ok || !!j.water.ok; Object.entries(j.water.log).forEach(([k, v]) => { water.log[k] = Math.max(water.log[k] || 0, v); }); saveWater(); }
   if (j.api && (j.api.geminiKey || j.api.claudeKey) && !hasKey()) { api = Object.assign(api, j.api, {locked: true}); saveKeyEverywhere(); }
   saveEntries();
   return n;
@@ -1201,7 +1773,7 @@ async function onbGo() {
   const k = $('#onbKey').value.trim().replace(/\s+/g, ''), btn = $('#onbGo');
   if (!k) {
     if (hasKey()) { closeOnb(); return; }
-    if (confirm('Bina key ke photo scan nahi chalega, sirf "Khud likho" se entry hogi. Phir bhi aage badhein?')) closeOnb();
+    if (confirm('Bina key ke photo scan nahi chalega, sirf "Khud likho" se entry hogi. Phir bhi aage badhein?')) { closeOnb(); maybeTour(); }
     return;
   }
   if (k.length < 20) { toast('Key poori copy nahi hui — AI Studio mein dobara "Copy key" dabao'); return; }
@@ -1215,7 +1787,7 @@ async function onbGo() {
     api = prev; btn.textContent = 'Continue';
     toast('Yeh key sahi nahi hai — dobara copy karke paste karo'); return;
   }
-  api.locked = true; saveKeyEverywhere(); fillSettings(); closeOnb();
+  api.locked = true; saveKeyEverywhere(); fillSettings(); closeOnb(); setTimeout(maybeTour, 400);
   toast(ok ? 'Key lag gayi aur lock ho gayi 🔒' : 'Key save ho gayi 🔒 (server busy tha — scan baad mein chalega)');
 }
 
@@ -1225,6 +1797,11 @@ function fillSettings() {
   $('#pName').value = p.name || ''; $('#pAge').value = p.age || ''; $('#pGender').value = p.gender || 'm';
   $('#pH').value = p.height || ''; $('#pW').value = p.weight || ''; $('#pAct').value = String(p.activity || 1.375);
   $('#pGoal').value = p.goal || 'lose'; $('#pDiet').value = p.diet || 'veg'; $('#pCustom').value = p.customTarget || '';
+  $('#pTarget').value = p.targetWeight || ''; $('#pPace').value = p.pace || 'normal';
+  $('#pMeds').value = p.meds || ''; $('#pAllergy').value = p.allergy || ''; $('#pOther').value = p.otherIll || '';
+  $('#habitInfo').innerHTML = profile ? `<div class="card" style="margin-top:12px"><b>Aadatein</b>${profile.sleep ? `<p class="small" style="margin:4px 0">Neend: ${profile.sleep} ghante</p>` : ''}
+    ${(profile.bad || []).map(id => `<div class="ci-line ci-bad">✗ ${hLabel(BAD_HABITS, id)}</div>`).join('')}${(profile.good || []).map(id => `<div class="ci-line ci-good">✓ ${hLabel(GOOD_HABITS, id)}</div>`).join('')}
+    ${!(profile.bad || []).length && !(profile.good || []).length ? '<p class="small muted" style="margin:4px 0 0">Abhi nahi bhari — neeche "saare sawaal" se bharo.</p>' : ''}</div>` : '';
   $('#aProv').value = api.provider; $('#aGKey').value = api.geminiKey; $('#aGModel').value = api.geminiModel;
   $('#aCKey').value = api.claudeKey; $('#aCModel').value = api.claudeModel;
   const lk = !!api.locked && hasKey();
@@ -1238,7 +1815,7 @@ function showCalc() {
   if (!profile) return;
   const c = calc(), box = $('#calcOut');
   box.hidden = false;
-  box.innerHTML = `<p>BMR (aaram mein kharch): <b>${c.bmr} kcal</b></p><p>Roz ka kul kharch: <b>${c.tdee} kcal</b></p><p>Aapka target: <b style="color:var(--leaf-deep);font-size:1.15rem">${c.target} kcal</b>, protein ${c.protein}g</p>${c.warn ? `<p class="small" style="color:var(--chili);margin-top:6px">${c.warn}</p>` : ''}
+  box.innerHTML = calHTML() + `${c.warn ? `<p class="small" style="color:var(--chili);margin-top:6px">${c.warn}</p>` : ''}
     <table class="needs"><caption style="text-align:left;font-weight:600;padding-top:8px">Roz ki zaroorat</caption>${(() => { const n = needs(); return NUT.map(d => `<tr><td>${d.name}</td><td>${d.type === 'max' && d.k !== 'cal' ? 'zyada se zyada ' : ''}${nfmt(n[d.k], d.k)} ${d.unit}</td></tr>`).join(''); })()}</table>
     <p class="muted small" style="margin-top:6px">Adult ke liye ICMR-NIN 2020 ke aas-paas; sodium WHO limit. Pregnancy, bachche ya bimari mein zaroorat alag hoti hai.</p>`;
 }
@@ -1247,9 +1824,16 @@ function saveProfile() {
   if (!(age >= 10 && age <= 100) || !(height >= 100 && height <= 230) || !(weight >= 25 && weight <= 250)) { toast('Umar, height aur wazan sahi bharo'); return; }
   const custom = +$('#pCustom').value || 0;
   if (custom && custom < 1000) { toast('Ye box roz ki calorie ka hai (jaise 1800), wazan ka nahi. Khaali chhodo to auto banega.'); $('#pCustom').focus(); return; }
-  profile = {name: $('#pName').value.trim(), age, gender: $('#pGender').value, height, weight, activity: +$('#pAct').value,
-    goal: $('#pGoal').value, diet: $('#pDiet').value, customTarget: custom};
+  const tw = +$('#pTarget').value || 0, goal = $('#pGoal').value;
+  if (tw && goal === 'lose' && tw >= weight) { toast('Target wazan abhi ke wazan se kam hona chahiye'); return; }
+  if (tw && goal === 'gain' && tw <= weight) { toast('Target wazan abhi ke wazan se zyada hona chahiye'); return; }
+  const oldW = profile && profile.weight;
+  profile = Object.assign({}, profile || {}, {name: $('#pName').value.trim(), age, gender: $('#pGender').value, height, weight, activity: +$('#pAct').value,
+    goal, diet: $('#pDiet').value, customTarget: custom, targetWeight: goal === 'keep' ? 0 : tw, pace: $('#pPace').value,
+    meds: $('#pMeds').value.trim(), allergy: $('#pAllergy').value.trim(), otherIll: $('#pOther').value.trim()});
+  if (!profile.startWeight) profile.startWeight = weight;
   LS.set('cd_profile', profile);
+  if (oldW !== weight) logWeight(weight);
   showCalc(); renderAll();
   toast('Profile save ho gayi');
 }
@@ -1297,6 +1881,38 @@ document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click
 $('#bCam').onclick = () => $('#fCam').click();
 $('#bGal').onclick = () => $('#fGal').click();
 $('#bMan').onclick = () => { pending = newPending('manual'); drawSearch(); };
+$('#bAsk').onclick = openAsk;
+$('#bQuiz').onclick = () => openQuiz('edit');
+$('#bHelp').onclick = openTour;
+$('#bTour').onclick = openTour;
+document.addEventListener('click', e => {
+  const j = e.target.closest('[data-jump]'); if (j) { const el = document.getElementById(j.dataset.jump); if (el) el.scrollIntoView({behavior: 'smooth', block: 'start'}); }
+  const jt = e.target.closest('[data-jumpt]'); if (jt) { const el = document.getElementById(jt.dataset.jumpt); if (el) el.scrollIntoView({behavior: 'smooth', block: 'center'}); }
+});
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-quiz]')) openQuiz(profile ? 'edit' : 'start');
+  if (e.target.closest('[data-wt]')) askWeight();
+  const ci = e.target.closest('[data-ci]'); if (ci) openCheck(ci.dataset.ci);
+});
+['#fAskCam', '#fAskGal'].forEach(id => $(id).addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f || !ask) return;
+  const q = document.querySelector('#askQ') ? $('#askQ').value : '';
+  try { const im = await compress(f, 1024); ask.b64 = im.b64; ask.url = im.url; } catch (er) { toast(er.message); }
+  drawAsk(q);
+}));
+$('#waterBox').addEventListener('click', e => {
+  const w = e.target.closest('[data-w]'), ok = e.target.closest('[data-wok]'), ed = e.target.closest('[data-wedit]');
+  if (w) {
+    const k = dayKey(Date.now()), before = waterToday(); water.log[k] = Math.max(0, before + +w.dataset.w); saveWater(); renderWater();
+    const gl = Math.ceil(waterGoal() / GLASS); if (before < gl && water.log[k] >= gl) toast('Aaj ka paani poora ho gaya 🎉');
+  } else if (ok) { water.goal = +ok.dataset.wok; water.ok = true; saveWater(); renderWater(); toast('Paani ka target set ho gaya'); }
+  else if (ed) {
+    const v = prompt('Roz kitne litre paani? (jaise 3 ya 3.5)', (waterGoal() / 1000).toFixed(1));
+    const l = parseFloat(String(v || '').replace(',', '.'));
+    if (l >= 1 && l <= 6) { water.goal = Math.round(l * 10) * 100; water.ok = true; saveWater(); renderWater(); toast('Paani ka target set ho gaya'); }
+    else if (v !== null) toast('1 se 6 litre ke beech likho');
+  }
+});
 ['#fCam', '#fGal'].forEach(id => $(id).addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; onPick(f); }));
 $('#sheetX').onclick = closeSheet;
 $('#sheetWrap').addEventListener('click', e => { if (e.target.id === 'sheetWrap') closeSheet(); });
@@ -1332,6 +1948,17 @@ $('#sheetBody').addEventListener('click', e => {
   if (t.id === 'toPend') { drawPending(); return; }
   if (t.id === 'retake') { closeSheet(); $('#fCam').click(); return; }
   if (t.id === 'savePend') savePending();
+  const cm = t.closest('[data-cm]'); if (cm && ciDraft) { ciDraft.mood = cm.dataset.cm; ciDraft.note = ($('#ciNote') || {}).value || ciDraft.note; drawCheck(); return; }
+  const cg = t.closest('[data-cg]'); if (cg && ciDraft) { const v = cg.dataset.cg, a = ciDraft.good, i = a.indexOf(v); i >= 0 ? a.splice(i, 1) : a.push(v); cg.classList.toggle('on'); return; }
+  const cb = t.closest('[data-cb]'); if (cb && ciDraft) { const v = cb.dataset.cb, a = ciDraft.bad, i = a.indexOf(v); i >= 0 ? a.splice(i, 1) : a.push(v); cb.classList.toggle('on'); return; }
+  if (t.id === 'ciSave') { saveCheck(); return; }
+  if (t.id === 'askCam') $('#fAskCam').click();
+  if (t.id === 'askGal') $('#fAskGal').click();
+  if (t.id === 'askClear') { ask.b64 = ''; ask.url = ''; drawAsk($('#askQ').value); }
+  if (t.id === 'askGo') runAsk();
+  if (t.id === 'askAdd') addAskToDiary();
+  if (t.id === 'askNew') openAsk();
+  if (t.id === 'askRetry') drawAsk(ask && ask.q || '');
 });
 $('#sheetBody').addEventListener('change', e => {
   const t = e.target;
@@ -1375,7 +2002,7 @@ $('#bClr').onclick = () => {
 
 /* din badle to screen apne aap update ho */
 let lastDay = dayKey(Date.now());
-setInterval(() => { tick(); const k = dayKey(Date.now()); if (k !== lastDay) { lastDay = k; histSel = k; renderAll(); } }, 20000);
+setInterval(() => { tick(); touchSeen(); updateAiBtn(); const k = dayKey(Date.now()); if (k !== lastDay) { lastDay = k; histSel = k; renderAll(); } }, 20000);
 
 async function boot() {
   tick();
@@ -1389,8 +2016,11 @@ async function boot() {
     const list = (await IDB.get('snaps')) || [], last = list[list.length - 1];
     if (last && last.data) { applyBackup(last.data); toast('Purana data auto backup se wapas aa gaya'); }
   }
+  await loadLocks();
   fillSettings(); renderToday();
-  if (!hasKey()) openOnb('start');
+  if (!profile) openQuiz('start');
+  else if (!hasKey()) openOnb('start');
+  else maybeTour();
   dailyBackup();
 }
 boot();
