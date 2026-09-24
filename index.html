@@ -1,7 +1,18 @@
 <!DOCTYPE html>
 <!--
-  Calorie Diagnosis — v1.04
+  Calorie Diagnosis — v1.06
   Ankush New Vision
+  v1.06 (24-09-2026): AI button = har baar naya 1 din ka plan
+   - 7 din wala plan hataya; har baar button dabane par naya plan
+   - Niyam: koi bhi main dish 30 din mein 3 baar se zyada nahi (roti, chawal, dahi, chaas, salad, chai, doodh jaise roz ke items chhod ke)
+   - Pichhle 30 din ke AI plans ka hisaab app rakhta hai; limit wali dish AI ko mana, AI ne phir bhi di to dobara try
+   - Pichhle 2 plan ki dishes bhi agle plan mein nahi (variety)
+  v1.05 (24-09-2026): AI plan har din alag
+   - AI ek baar mein 7 din (Som–Ravi) ka plan banata hai, har din alag nashta / dal-sabzi / snack / fal
+   - Aaj ka din apne aap khulta hai; din ke button se koi bhi din dekho
+   - Naya hafta shuru hote hi (Diet tab kholne par) naya plan apne aap banta hai
+   - Profile / problem / target badle to "naya plan banao" note
+   - Share: chuna hua din, ya poora hafta ek message mein
   v1.04 (24-09-2026): Problem chart (6 point)
    - Diet tab mein 6 block: har block mein problem chuno (Sugar, BP, Thyroid...) ya apna likho + detail
    - Diet chart problem ke hisaab se badalta hai (item badle, kya khayein / kya na khayein / tips)
@@ -291,7 +302,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
     <div id="probWarn"></div>
     <div id="plan"></div>
     <div id="probCards"></div>
-    <button class="btn primary full" id="bAiPlan">🤖 AI se meri diet chart banao</button>
+    <button class="btn primary full" id="bAiPlan">🤖 AI se naya diet plan banao</button>
     <div id="aiPlan" style="margin-top:14px"></div>
     <button class="btn full" id="bShare">📤 Diet plan WhatsApp / share karo</button>
     <p class="disc">Ye app calorie ka andaza deta hai, medical salah nahi. Problem chart wali salah general hai. Bimari mein diet badalne se pehle doctor / dietitian se baat karo, aur dawai apne aap band mat karo.</p>
@@ -354,7 +365,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
       <label class="btn">⬆️ Backup restore<input type="file" id="fImp" accept="application/json,.json" hidden></label>
     </div>
     <button class="btn danger full" id="bClr">Saari diary mitao</button>
-    <p class="ver">Calorie Diagnosis v1.04, Ankush New Vision</p>
+    <p class="ver">Calorie Diagnosis v1.06, Ankush New Vision</p>
   </section>
 </main>
 
@@ -378,7 +389,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 
 <script>
 'use strict';
-const VERSION = '1.04';
+const VERSION = '1.06';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad = n => String(n).padStart(2, '0');
@@ -404,6 +415,9 @@ let api = Object.assign({provider: 'gemini', geminiKey: '', claudeKey: '', gemin
 if (/^gemini-(1|2)\./.test(api.geminiModel || '')) { api.geminiModel = 'gemini-3.6-flash'; LS.set('cd_api', api); }
 let entries = LS.get('cd_entries', []);
 let aiChart = LS.get('cd_aichart', null);
+if (aiChart && !Array.isArray(aiChart.meals)) aiChart = null;   // v1.05 ka 7-din wala plan hatao
+let aiHist = LS.get('cd_aihist', []);                            // [{ts, dishes:[norm], names:[display]}]
+const MONTH_MS = 30 * 864e5, DISH_LIMIT = 3;
 let problems = LS.get('cd_problems', []);
 while (problems.length < 6) problems.push({k: '', note: ''});
 let pending = null;
@@ -707,7 +721,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const isBusy = res => !res.ok && ([429, 500, 503, 529].includes(res.status) || /high demand|overloaded|try again later|unavailable|exhausted/i.test(res.d?.error?.message || ''));
 const BUSY_MSG = 'Google/AI ka server abhi busy hai. 1–2 minute baad dobara try karo.';
 const hasKey = () => api.provider === 'claude' ? !!api.claudeKey : !!api.geminiKey;
-async function aiCall(prompt, b64) {
+async function aiCall(prompt, b64, maxTok) {
   if (!hasKey()) throw new Error('NOKEY');
   if (api.provider === 'claude') {
     const content = [];
@@ -717,7 +731,7 @@ async function aiCall(prompt, b64) {
       const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {'content-type': 'application/json', 'x-api-key': api.claudeKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'},
-        body: JSON.stringify({model: api.claudeModel || 'claude-sonnet-5', max_tokens: 2000, messages: [{role: 'user', content}]})
+        body: JSON.stringify({model: api.claudeModel || 'claude-sonnet-5', max_tokens: maxTok || 2000, messages: [{role: 'user', content}]})
       });
       return {ok: r.ok, status: r.status, d: await r.json().catch(() => ({}))};
     };
@@ -971,16 +985,33 @@ function saveProblems() {
   toast(activeProbs().length ? 'Diet plan problem ke hisaab se set ho gaya' : 'Koi problem nahi chuni — normal plan');
   $('#plan').scrollIntoView({behavior: 'smooth', block: 'start'});
 }
+/* ---------- AI plan: har baar naya, main dish 30 din mein max 3 baar ---------- */
+const normDish = x => String(x || '').toLowerCase().replace(/\(.*?\)/g, ' ')
+  .replace(/\b(bina|kam|less|no)\s+(cheeni|sugar|namak|salt|tel|oil|ghee)\b/g, ' ')
+  .replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim()
+  .replace(/\bcheela\b|\bchila\b/g, 'chilla').replace(/\bsabji\b/g, 'sabzi').replace(/\bdaal\b/g, 'dal').replace(/\bsubji\b/g, 'sabzi');
+const STAPLES = ['dahi', 'curd', 'chaas', 'buttermilk', 'salad', 'kakdi salad', 'green salad', 'kakdi', 'chai', 'tea', 'green tea', 'doodh', 'milk', 'toned milk', 'paani', 'water', 'gunguna paani', 'nimbu paani', 'lassi', 'haldi doodh'];
+const isStaple = n => STAPLES.includes(n) || /^((multigrain|bajra|jowar|makka|gehu|missi|besan|ragi|nachni)\s)?(roti|phulka|chapati|bhakri)$/.test(n) || /^((plain|steamed|brown)\s)?(chawal|rice)$/.test(n);
+const recentHist = () => aiHist.filter(h => Date.now() - h.ts < MONTH_MS);
+function dishCounts() { const m = {}; recentHist().forEach(h => h.dishes.forEach(d => { m[d] = (m[d] || 0) + 1; })); return m; }
+const displayName = n => { for (const h of recentHist()) { const i = h.dishes.indexOf(n); if (i >= 0) return h.names[i]; } return n; };
+function mainDishes(meals) {
+  const seen = new Map();
+  (meals || []).forEach(m => (m.items || []).forEach(i => { const name = i.food || i.f || ''; const n = normDish(name); if (n && !isStaple(n) && !seen.has(n)) seen.set(n, name); }));
+  return {dishes: [...seen.keys()], names: [...seen.values()]};
+}
+const aiHave = () => aiChart && Array.isArray(aiChart.meals) && aiChart.meals.length > 0;
+const aiFresh = () => aiHave() && aiChart.sig === probSig() && aiChart.target === calc().target && aiChart.diet === ((profile && profile.diet) || 'veg');
+const normMeals = ms => (ms || []).map(m => ({t: m.time || '', title: m.title || '', items: (m.items || []).map(i => [i.food || i.f || '', i.qty || i.q || '', Math.round(+(i.cal ?? i.c) || 0)])}));
 function planText() {
-  const c = calc(), ap = activeProbs(), L = [];
+  const c = calc(), ap = activeProbs(), L = [], useAi = aiFresh();
   L.push(`*Diet Plan${profile && profile.name ? ' — ' + profile.name : ''}*`);
   L.push(`Target: ${c.target} kcal roz`);
   if (ap.length) L.push('Problem: ' + ap.map(probLabel).join('; '));
-  const useAi = aiChart && Array.isArray(aiChart.meals) && aiChart.sig === probSig();
-  const meals = useAi ? aiChart.meals.map(m => ({t: m.time, title: m.title, items: (m.items || []).map(i => [i.food, i.qty, +i.cal || 0])})) : lastPlan;
+  const meals = useAi ? normMeals(aiChart.meals) : lastPlan;
   meals.forEach(m => { L.push(''); L.push(`*${m.t} — ${m.title}*`); m.items.forEach(x => L.push(`• ${x[0]} (${x[1]}) ~${x[2]} kcal`)); });
   const eat = [...new Set(ap.flatMap(p => (PROB[p.k] || {}).eat || []))], avoid = [...new Set(ap.flatMap(p => (PROB[p.k] || {}).avoid || []))];
-  if (useAi && aiChart.avoid && aiChart.avoid.length) aiChart.avoid.forEach(x => avoid.includes(x) || avoid.push(x));
+  if (useAi && aiChart.avoid) aiChart.avoid.forEach(x => avoid.includes(x) || avoid.push(x));
   if (eat.length) { L.push(''); L.push('*✓ Khayein*'); eat.forEach(x => L.push('• ' + x)); }
   if (avoid.length) { L.push(''); L.push('*✗ Kam / na khayein*'); avoid.forEach(x => L.push('• ' + x)); }
   L.push(''); L.push('_Yeh general diet jaankari hai. Bimari ho to doctor / dietitian ki salah zaroor lein._');
@@ -994,41 +1025,59 @@ async function sharePlan() {
   window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank');
 }
 function drawAiChart() {
-  if (!aiChart || !Array.isArray(aiChart.meals)) { $('#aiPlan').innerHTML = ''; return; }
-  const tot = aiChart.meals.reduce((a, m) => a + (m.items || []).reduce((b, i) => b + (+i.cal || 0), 0), 0);
-  const stale = (aiChart.sig || '[]') !== probSig();
-  $('#aiPlan').innerHTML = `<h3 style="margin:6px 0 10px">AI diet chart <small class="muted" style="font-weight:400;font-size:.8rem">${esc(aiChart.made || '')}</small></h3>` +
-    (stale ? `<div class="warn">Problem chart badal gaya hai — naye hisaab se AI chart dobara banao.</div>` : '') +
-    aiChart.meals.map(m => { const st = (m.items || []).reduce((b, i) => b + (+i.cal || 0), 0);
-      return `<div class="pslot"><div class="ph"><time>${esc(m.time)}</time><h3>${esc(m.title)}</h3><span>${st} kcal</span></div><ul>${(m.items || []).map(i => `<li><span>${esc(i.food)} <small>${esc(i.qty)}</small></span><b>${+i.cal || 0}</b></li>`).join('')}</ul></div>`; }).join('') +
+  if (!aiHave()) { $('#aiPlan').innerHTML = ''; return; }
+  const meals = normMeals(aiChart.meals), tot = meals.reduce((a, m) => a + m.items.reduce((b, x) => b + x[2], 0), 0);
+  const cnt = dishCounts(), full = Object.keys(cnt).filter(k => cnt[k] >= DISH_LIMIT);
+  $('#aiPlan').innerHTML = `<h3 style="margin:6px 0 2px">AI diet plan</h3><p class="muted small" style="margin:0 0 8px">${esc(aiChart.made || '')}</p>` +
+    (!aiFresh() ? `<div class="warn">Profile, problem ya target badal gaya hai — naya plan banao.</div>` : '') +
+    meals.map(m => { const st = m.items.reduce((b, x) => b + x[2], 0);
+      return `<div class="pslot"><div class="ph"><time>${esc(m.t)}</time><h3>${esc(m.title)}</h3><span>${st} kcal</span></div><ul>${m.items.map(x => { const n = normDish(x[0]), k = cnt[n] || 0;
+        return `<li><span>${esc(x[0])} <small>${esc(x[1])}${!isStaple(n) && k ? `, mahine mein ${k}/${DISH_LIMIT} baar` : ''}</small></span><b>${x[2]}</b></li>`; }).join('')}</ul></div>`; }).join('') +
     `<p class="ptot">Kul lagbhag ${tot} kcal</p>` +
     (aiChart.avoid && aiChart.avoid.length ? `<div class="card"><h3>Kam / na khayein</h3><ul class="tips">${aiChart.avoid.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : '') +
-    (aiChart.tips && aiChart.tips.length ? `<div class="card"><h3>Tips</h3><ul class="tips">${aiChart.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : '');
+    (aiChart.tips && aiChart.tips.length ? `<div class="card"><h3>Tips</h3><ul class="tips">${aiChart.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : '') +
+    `<p class="muted small">Pichhle 30 din mein ${recentHist().length} AI plan bane. ${full.length ? full.length + ' dish apni 3 baar ki limit par hain — woh agle plans mein nahi aayengi.' : 'Koi dish abhi 3 baar ki limit par nahi.'}</p>`;
 }
 async function makeAiChart() {
   if (!profile) { toast('Pehle profile bharo'); goTab('t-set'); return; }
   if (!hasKey()) { toast('Settings mein AI key daalo'); goTab('t-set'); return; }
-  const c = calc(), btn = $('#bAiPlan'), ap = activeProbs();
+  const c = calc(), btn = $('#bAiPlan'), ap = activeProbs(), n = needs();
   const dietTxt = {veg: 'lacto-vegetarian', jain: 'strict Jain (no onion, garlic, potato, carrot or any root/underground vegetable, no eggs or meat; last meal before sunset)', egg: 'vegetarian plus eggs', nonveg: 'non-vegetarian'}[profile.diet || 'veg'];
-  const prompt = `Create a one-day Indian home-food diet chart.
+  const cnt = dishCounts();
+  let banned = Object.keys(cnt).filter(k => cnt[k] >= DISH_LIMIT);
+  const recent = [...new Set(recentHist().slice(-2).flatMap(h => h.dishes))].filter(d => !banned.includes(d));
+  const base = `Create a NEW one-day Indian home-food diet plan.
 Person: ${profile.gender === 'm' ? 'male' : 'female'}, age ${profile.age}, height ${profile.height} cm, weight ${profile.weight} kg, goal: ${{lose: 'lose weight slowly and safely', keep: 'maintain weight', gain: 'gain weight healthily'}[profile.goal]}.
-Diet type: ${dietTxt}. Daily calorie target: ${c.target} kcal (total must be within 5% of this). Protein at least ${c.protein} g.
-${ap.length ? 'Health problems (adjust the whole plan for ALL of these, follow standard Indian dietary guidance, never suggest stopping medicines): ' + ap.map(probLabel).join('; ') + '.\n' : ''}${hasProb('kidney') ? 'Kidney problem: do NOT push high potassium or high protein foods; keep it conservative and advise doctor-guided limits.\n' : ''}Nutrient guide: magnesium ${needs().mg} mg, potassium ${hasProb('kidney') ? 'as per doctor' : '3500 mg'}, zinc ${needs().zn} mg, vitamin C ${needs().vc} mg; keep sodium under ${needs().na} mg; carbs about ${needs().c} g.
-Use simple, affordable foods from an Indian kitchen, Hinglish (Roman script) names, household quantities (katori, pc, glass).
-Reply with ONLY valid JSON: {"meals":[{"time":"7:30 AM","title":"Nashta","items":[{"food":"Moong dal chilla","qty":"2 pc","cal":220}]}],"avoid":["foods to avoid or limit for these problems, short Hinglish"],"tips":["3 to 5 short practical Hinglish tips"]}`;
-  btn.disabled = true; btn.textContent = 'Chart ban raha hai…';
+Diet type: ${dietTxt}. Daily calorie target: ${c.target} kcal (total within 5% of this). Protein at least ${c.protein} g.
+${ap.length ? 'Health problems (adjust the whole plan for ALL of these, follow standard Indian dietary guidance, never suggest stopping medicines): ' + ap.map(probLabel).join('; ') + '.\n' : ''}${hasProb('kidney') ? 'Kidney problem: do NOT push high potassium or high protein foods; keep it conservative.\n' : ''}Nutrient guide: magnesium ${n.mg} mg, potassium ${hasProb('kidney') ? 'as per doctor' : '3500 mg'}, zinc ${n.zn} mg, vitamin C ${n.vc} mg; sodium under ${n.na} mg; carbs about ${n.c} g.
+Use simple, affordable foods from an Indian kitchen, Hinglish (Roman script) dish names, household quantities (katori, pc, glass). Write each dish as its own item with a clear name (e.g. "Moong dal chilla", "Lauki chana dal").
+Random seed for variety: ${Date.now() % 100000}.`;
+  const tail = `Reply with ONLY valid JSON: {"meals":[{"time":"7:30 AM","title":"Nashta","items":[{"food":"Moong dal chilla","qty":"2 pc","cal":220}]}],"avoid":["foods to limit for these problems, short Hinglish"],"tips":["3 to 5 short practical Hinglish tips"]}`;
+  btn.disabled = true; btn.textContent = 'Naya plan ban raha hai…';
   try {
-    const j = parseJSON(await aiCall(prompt, null));
-    if (!Array.isArray(j.meals)) throw new Error('Chart sahi format mein nahi aaya');
+    let j, md, bad = [];
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const rules = (banned.length ? `NOT ALLOWED (already used ${DISH_LIMIT} times this month, do not use these or close variants): ${banned.map(displayName).join(', ')}.\n` : '') +
+        (recent.length ? `Also avoid these dishes from the last plans (want variety): ${recent.map(displayName).join(', ')}.\n` : '');
+      j = parseJSON(await aiCall(base + '\n' + rules + tail, null, 3000));
+      if (!Array.isArray(j.meals) || !j.meals.length) throw new Error('Plan sahi format mein nahi aaya, dobara try karo');
+      md = mainDishes(j.meals);
+      bad = md.dishes.filter(d => (cnt[d] || 0) >= DISH_LIMIT);
+      if (!bad.length) break;
+      banned = [...new Set([...banned, ...bad])];
+    }
+    if (bad.length) throw new Error('AI baar-baar limit wali dish de raha hai, thodi der baad dobara try karo');
     const d = new Date();
-    aiChart = {meals: j.meals, tips: j.tips || [], avoid: j.avoid || [], sig: probSig(), made: d.getDate() + ' ' + MONTHS[d.getMonth()] + ', ' + c.target + ' kcal' + (ap.length ? ', ' + ap.length + ' problem' : '')};
-    LS.set('cd_aichart', aiChart);
+    aiChart = {meals: j.meals, tips: j.tips || [], avoid: j.avoid || [], sig: probSig(), target: c.target, diet: profile.diet || 'veg', ts: Date.now(),
+      made: 'Bana: ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ', ' + d.toLocaleTimeString('en-IN', {hour: 'numeric', minute: '2-digit'}) + ', ' + c.target + ' kcal' + (ap.length ? ', ' + ap.length + ' problem' : '')};
+    aiHist = [...recentHist(), {ts: Date.now(), dishes: md.dishes, names: md.names}];
+    LS.set('cd_aichart', aiChart); LS.set('cd_aihist', aiHist);
     drawAiChart();
-    toast('AI diet chart ban gaya');
+    toast('Naya diet plan ban gaya');
   } catch (e) {
     toast(e.message === 'NOKEY' ? 'Settings mein AI key daalo' : e.message);
   }
-  btn.disabled = false; btn.textContent = '🤖 AI se meri diet chart banao';
+  btn.disabled = false; btn.textContent = '🤖 AI se naya diet plan banao';
 }
 
 /* ---------- SETTINGS ---------- */
@@ -1075,7 +1124,7 @@ async function testApi() {
   b.disabled = false; b.textContent = 'Test karo';
 }
 function exportData() {
-  const blob = new Blob([JSON.stringify({app: 'calorie-diagnosis', version: VERSION, profile, entries, aiChart, problems}, null, 1)], {type: 'application/json'});
+  const blob = new Blob([JSON.stringify({app: 'calorie-diagnosis', version: VERSION, profile, entries, aiChart, aiHist, problems}, null, 1)], {type: 'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = 'calorie-backup-' + dayKey(Date.now()) + '.json';
   document.body.appendChild(a); a.click(); a.remove();
@@ -1088,7 +1137,8 @@ async function importData(file) {
     const ids = new Set(entries.map(e => e.id)); let n = 0;
     (j.entries || []).forEach(e => { if (!ids.has(e.id)) { entries.push(e); n++; } });
     if (j.profile) { profile = j.profile; LS.set('cd_profile', profile); }
-    if (j.aiChart) { aiChart = j.aiChart; LS.set('cd_aichart', aiChart); }
+    if (j.aiChart && Array.isArray(j.aiChart.meals)) { aiChart = j.aiChart; LS.set('cd_aichart', aiChart); }
+    if (Array.isArray(j.aiHist)) { const t = new Set(aiHist.map(h => h.ts)); j.aiHist.forEach(h => t.has(h.ts) || aiHist.push(h)); aiHist.sort((a, b) => a.ts - b.ts); LS.set('cd_aihist', aiHist); }
     if (Array.isArray(j.problems)) { problems = j.problems.slice(0, 6); while (problems.length < 6) problems.push({k: '', note: ''}); LS.set('cd_problems', problems); }
     saveEntries(); fillSettings(); renderAll();
     toast(`Backup restore hua, ${n} naye item`);
@@ -1152,7 +1202,7 @@ $('#bSaveP').onclick = saveProfile;
 $('#aProv').onchange = provBoxes;
 $('#bSaveA').onclick = saveApi;
 $('#bTestA').onclick = testApi;
-$('#bAiPlan').onclick = makeAiChart;
+$('#bAiPlan').onclick = () => makeAiChart();
 $('#bProbSave').onclick = saveProblems;
 $('#bShare').onclick = sharePlan;
 $('#probGrid').addEventListener('change', e => {
