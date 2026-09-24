@@ -1,7 +1,18 @@
 <!DOCTYPE html>
 <!--
-  Calorie Diagnosis — v1.12
+  Calorie Diagnosis — v1.14
   Ankush New Vision
+  v1.14 (25-09-2026): Welcome dashboard + walk / steps
+   - App khulte hi naya start screen: logo, "Healthy Life • Better You", thali ki tasveer, Get Started, "आपका स्वास्थ्य, हमारी प्राथमिकता";
+     purane customer ko naam + aaj ka khana / paani / steps ki jhalak
+   - 🚶 Walk: "Walk shuru karo" se phone jeb mein rakh ke steps ginti (motion sensor, screen on rehti hai), km, kcal burn, time
+   - ✏️ Phone ke Health / Fit app ke steps haath se bhi daal sakte ho; steps goal; 7 din ke chhote bar
+   - Walk se jali calorie ka aadha aaj ke khane mein jud jata hai; report mein walk poori / kam
+  v1.13 (25-09-2026): English option + app ki din ki report
+   - Bhasha toggle: Hindi (Hinglish) / English — header ke button, Settings aur pehle sawaal par; AI ke jawab bhi usi bhasha mein
+   - "Aaj ka din kaisa gaya" ab app khud batata hai (data dekh ke): score /10, achhi baatein hari, galtiyan laal,
+     har galti ke neeche "Kal: ye mat karna / ye karo"; tala-meetha item, raat ko der se khana, nashta skip, paani, namak, protein, fal-sabzi
+   - Mood / kuch aur jodna optional; History mein har din ki report; Diet salah mein "Kal ki galti"
   v1.12 (25-09-2026): Naya saaf layout + app guide + dawai / allergy
    - Header mein "Namaste, naam 👋" aur ? (madad) button; halka hara background
    - Aaj tab: "Aaj ke kaam" (khana, paani, wazan, din ka hisaab) ✓ patti; "Khana jodo" ke 4 bade button samjhaane wali line ke saath;
@@ -125,6 +136,41 @@ button,input,select{font:inherit;color:inherit}
 .top .sub{margin:0;font-size:.82rem;color:var(--muted)}
 .top .hi{margin:0;font-size:.9rem;font-weight:600;color:var(--ink)}
 .hr{display:flex;align-items:center;gap:10px}
+.welcome{position:fixed;inset:0;z-index:60;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:12px;padding:calc(26px + env(safe-area-inset-top,0px)) 22px calc(24px + env(safe-area-inset-bottom,0px));
+  background:radial-gradient(40% 22% at 12% 18%,rgba(255,255,255,.6),transparent 70%),radial-gradient(34% 20% at 88% 34%,rgba(214,236,176,.8),transparent 70%),radial-gradient(46% 26% at 18% 82%,rgba(120,178,88,.45),transparent 70%),radial-gradient(40% 24% at 92% 92%,rgba(168,208,118,.55),transparent 70%),linear-gradient(180deg,#EEF6E4 0%,#D3E8BC 46%,#E6F1D8 100%)}
+.welcome[hidden]{display:none}
+.wl-top{text-align:center}
+.wl-logo{width:108px;height:98px;display:block;margin:0 auto}
+.wl-title{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:clamp(1.8rem,8vw,2.3rem);color:#173B35;margin:6px 0 0;line-height:1.1}
+.wl-tag{color:#2E6B4F;font-weight:600;margin:4px 0 0}
+.wl-hello{color:#173B35;font-weight:700;margin:10px 0 0;font-size:1.05rem}
+.wl-plate{width:min(88vw,380px);height:auto;filter:drop-shadow(0 14px 18px rgba(30,60,30,.25))}
+.wl-bottom{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center}
+.wl-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-bottom:12px}
+.wl-stats div{background:rgba(255,255,255,.75);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:14px;padding:8px 4px;text-align:center;color:#173B35}
+.wl-stats b{display:block;font-family:'Baloo 2',sans-serif;font-size:1.2rem;line-height:1.2}
+.wl-stats span{font-size:.72rem;color:#3d5a4c}
+.wl-cta{width:100%;background:#1F6B4F;color:#fff;border:0;border-radius:30px;padding:16px;font-size:1.15rem;font-weight:700;box-shadow:0 8px 18px rgba(31,107,79,.35);cursor:pointer}
+.wl-foot{color:#2E4B3F;font-weight:700;margin:12px 0 0;text-align:center;font-family:'Hind','Noto Sans Devanagari',sans-serif}
+.wl-lang{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px;border:1.5px solid rgba(31,107,79,.4);background:rgba(255,255,255,.7);color:#1F6B4F;border-radius:18px;padding:6px 12px;font-weight:700;cursor:pointer}
+.minibars{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;height:64px;align-items:end;margin:10px 0 4px}
+.mb{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px}
+.mb i{display:block;width:70%;background:color-mix(in srgb,#E8833A 40%,var(--surface));border-radius:4px}
+.mb.on i{background:#E8833A}
+.mb span{font-size:.64rem;color:var(--muted)}
+.linkbtn{background:none;border:0;color:var(--leaf-deep);font-weight:700;font-size:.85rem;cursor:pointer;text-decoration:underline;padding:0}
+.walk-in{text-align:center;padding-top:34px}
+.wk-big{font-family:'Baloo 2',sans-serif;font-size:5.2rem;font-weight:800;color:#E8833A;line-height:1}
+.wk-lbl{margin:0 0 18px;color:var(--muted);font-weight:600}
+.wk-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.wk-row div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 6px}
+.wk-row b{display:block;font-family:'Baloo 2',sans-serif;font-size:1.4rem}
+.wk-row span{font-size:.8rem;color:var(--muted)}
+.langbtn{height:36px;min-width:44px;padding:0 10px;border-radius:18px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font-weight:700;font-size:.85rem;cursor:pointer;flex:none}
+.rscore{display:flex;align-items:center;gap:12px;margin:4px 0 8px}
+.rscore .sc{font-family:'Baloo 2',sans-serif;font-size:2rem;font-weight:800;line-height:1}
+.rscore .sv{font-weight:700}
+.ci-tip{font-size:.86rem;color:var(--ink);font-weight:500;margin:2px 0 0;opacity:.9}
 .helpbtn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--leaf);background:var(--surface);color:var(--leaf-deep);font-weight:800;font-size:1.05rem;cursor:pointer;flex:none}
 .stitle{display:flex;align-items:center;gap:8px;font-size:1.22rem;margin:26px 0 2px;scroll-margin-top:120px}
 .shelp{color:var(--muted);font-size:.87rem;margin:0 0 12px}
@@ -311,7 +357,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 .wcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:16px}
 .wh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
 .wh span{font-size:.9rem;color:var(--muted)}
-.wcard .row{margin-top:10px}.wcard .row .btn:first-child{flex:0 0 56px}
+.wcard .row{margin-top:10px}#waterBox .wcard .row .btn:first-child{flex:0 0 56px}
 .wconf{background:var(--chip);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:.92rem}
 .needs tr.cur td{color:var(--leaf-deep);font-weight:700}
 .verdict{border-radius:14px;padding:12px 14px;margin:6px 0 10px;border:2px solid}
@@ -376,7 +422,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
     <p class="hi" id="hello">Namaste 👋</p>
     <h1>Calorie Diagnosis</h1>
   </div>
-  <div class="hr"><div class="clock"><span id="clkDay"></span><b id="clkTime"></b></div><button class="helpbtn" id="bHelp" aria-label="App kaise chalayein">?</button></div>
+  <div class="hr"><div class="clock"><span id="clkDay"></span><b id="clkTime"></b></div><button class="langbtn" id="bLang" aria-label="Language">EN</button><button class="helpbtn" id="bHelp" aria-label="App kaise chalayein">?</button></div>
 </header>
 
 <main>
@@ -400,6 +446,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 
     <h2 class="stitle">✅ Roz ke kaam</h2>
     <p class="shelp">Paani, wazan aur din ka hisaab — roz sirf 1 minute.</p>
+    <div id="walkBox"></div>
     <div id="weightBox"></div>
     <div id="waterBox"></div>
     <div id="checkBox"></div>
@@ -517,11 +564,35 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
     <div id="snapList" class="card" style="padding:4px 14px"></div>
     <button class="btn danger full" id="bClr">Saari diary mitao</button>
     <h2 class="stitle">📖 Madad</h2>
+    <label class="field">🌐 Bhasha / Language<select id="lSel"><option value="hi">हिंदी (Hinglish)</option><option value="en">English</option></select></label>
     <button class="btn full" id="bTour">📖 App kaise chalayein (guide)</button>
-    <p class="ver">Calorie Diagnosis v1.12, Ankush New Vision</p>
+    <p class="ver">Calorie Diagnosis v1.14, Ankush New Vision</p>
   </section>
 </main>
 
+<div id="welcome" class="welcome" data-notr role="dialog" aria-label="Calorie Diagnosis">
+  <button class="wl-lang" id="wlLang">EN</button>
+  <div class="wl-top"><svg class="wl-logo" viewBox="0 0 120 110" aria-hidden="true"><defs><linearGradient id="wlg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#2E8B57"/><stop offset="1" stop-color="#9ACD32"/></linearGradient></defs><circle cx="50" cy="20" r="9" fill="#1F6B52"/><circle cx="75" cy="13" r="11" fill="#2E7D5B"/><path d="M42 34C20 48 18 80 42 101C34 80 36 56 50 40Z" fill="#1F6B52"/><path d="M48 101C42 70 58 38 104 30C104 66 86 97 48 101Z" fill="url(#wlg)"/><path d="M52 95C64 72 78 56 97 40" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".75"/></svg><h1 class="wl-title">Calorie Diagnosis</h1><p class="wl-tag">Healthy Life • Better You</p><p class="wl-hello" id="wlHello"></p></div>
+  <svg class="wl-plate" viewBox="0 0 320 210" aria-hidden="true">
+<ellipse cx="160" cy="182" rx="150" ry="24" fill="#B98A55"/><ellipse cx="160" cy="176" rx="146" ry="22" fill="#D4AC76"/>
+<path d="M20 170c20-22 48-26 70-14-24 2-46 8-70 14z" fill="#5E9E3A"/><path d="M300 168c-18-20-44-24-64-12 22 2 42 6 64 12z" fill="#6DAE45"/><path d="M40 186c16-8 34-8 46 2-16-2-30-2-46-2z" fill="#4E8E2E"/>
+<ellipse cx="148" cy="138" rx="112" ry="46" fill="#ffffff"/><ellipse cx="148" cy="134" rx="98" ry="36" fill="#F3F6EF"/>
+<g><ellipse cx="96" cy="118" rx="30" ry="14" fill="#4CAF50" transform="rotate(-25 96 118)"/><ellipse cx="190" cy="112" rx="32" ry="13" fill="#66BB6A" transform="rotate(20 190 112)"/><ellipse cx="146" cy="104" rx="34" ry="15" fill="#7CB342"/><ellipse cx="120" cy="100" rx="22" ry="10" fill="#8BC34A" transform="rotate(-10 120 100)"/><ellipse cx="176" cy="96" rx="20" ry="9" fill="#9CCC65" transform="rotate(15 176 96)"/></g>
+<circle cx="90" cy="130" r="13" fill="#E53935"/><circle cx="86" cy="126" r="3" fill="#fff" opacity=".6"/><circle cx="116" cy="140" r="12" fill="#E53935"/><circle cx="112" cy="136" r="3" fill="#fff" opacity=".6"/><circle cx="104" cy="112" r="10" fill="#EF5350"/>
+<path d="M136 108c14-14 36-10 40 6 4 18-14 30-30 26-14-4-20-20-10-32z" fill="#FBC02D"/><path d="M150 112c6 4 12 12 10 22" stroke="#F57F17" stroke-width="2" fill="none"/>
+<circle cx="192" cy="130" r="11" fill="#DCEDC8" stroke="#7CB342" stroke-width="3"/><circle cx="212" cy="120" r="10" fill="#DCEDC8" stroke="#7CB342" stroke-width="3"/><circle cx="176" cy="142" r="9" fill="#FFB74D"/><circle cx="208" cy="142" r="9" fill="#FF8A65"/>
+<rect x="250" y="44" width="40" height="112" rx="12" fill="#E3F2FD" fill-opacity=".85" stroke="#B0BEC5" stroke-width="2"/><rect x="254" y="80" width="32" height="72" rx="9" fill="#BBDEFB" fill-opacity=".8"/><rect x="258" y="26" width="24" height="20" rx="4" fill="#90A4AE"/><rect x="262" y="18" width="16" height="10" rx="3" fill="#B0BEC5"/>
+<circle cx="262" cy="170" r="16" fill="#FFEB3B" stroke="#FBC02D" stroke-width="3"/><path d="M262 156v28M248 170h28M252 160l20 20M272 160l-20 20" stroke="#FBC02D" stroke-width="1.5"/>
+</svg>
+  <div class="wl-bottom"><div class="wl-stats" id="wlStats" hidden></div><button class="wl-cta" id="wlGo">Get Started</button><p class="wl-foot" id="wlFoot">आपका स्वास्थ्य, हमारी प्राथमिकता</p></div>
+</div>
+<div id="walk" class="onb" hidden role="dialog" aria-label="Walk"><div class="onb-in walk-in">
+  <p class="small" id="wkStatus" style="font-weight:600">Walk chal rahi hai… chalte raho 🚶</p>
+  <div class="wk-big" id="wkSteps">0</div><p class="wk-lbl">steps</p>
+  <div class="wk-row"><div><b id="wkKm">0.00</b><span>km</span></div><div><b id="wkKcal">0</b><span>kcal burn</span></div><div><b id="wkTime">0:00</b><span>time</span></div></div>
+  <p class="small muted">Phone jeb mein rakh ke chalo. Screen on rahegi — band hui to ginti ruk jayegi.</p>
+  <button class="btn danger full" id="wkStop" style="padding:16px">⏹ Walk band karo (2 second daba ke rakho)</button>
+</div></div>
 <div id="tour" class="onb" hidden role="dialog" aria-modal="true" aria-label="App kaise chalayein"><div class="onb-in" id="tourIn"></div></div>
 <div id="quiz" class="onb" hidden role="dialog" aria-modal="true" aria-label="Profile ke sawaal"><div class="onb-in" id="quizIn"></div></div>
 <div id="onb" class="onb" hidden role="dialog" aria-modal="true" aria-label="API key guide">
@@ -571,7 +642,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 
 <script>
 'use strict';
-const VERSION = '1.12';
+const VERSION = '1.14';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad = n => String(n).padStart(2, '0');
@@ -859,7 +930,7 @@ function ringSVG(eaten, target) {
 }
 function renderToday() {
   const c = calc(), t = sum(dayEntries(dayKey(Date.now())));
-  const eaten = Math.round(t.cal), rem = c.target - eaten;
+  const bonus = walkBonus(dayKey(Date.now())), eaten = Math.round(t.cal), rem = c.target + bonus - eaten;
   $('#nudge').innerHTML = !profile
     ? `<div class="card"><h3>Pehle apni profile bharo</h3><p>Umar, height aur wazan se aapka sahi calorie target banega. Abhi 2000 kcal maan ke chal rahe hain.</p><button class="btn primary full" data-quiz="1">Profile bharo (2 minute)</button></div>`
     : (c.warn ? `<div class="warn">${c.warn}</div>` : '');
@@ -870,14 +941,14 @@ function renderToday() {
     .map(([l, v, goal]) => `<div class="katori"><div><b>${Math.round(v)}g</b><small>${l}${goal ? ' /' + goal : ''}</small></div></div>`).join('');
   const rt = $('#remText');
   rt.className = 'rem' + (rem < 0 ? ' over' : '');
-  rt.textContent = eaten === 0 ? 'Aaj abhi tak kuch nahi joda' : rem >= 0 ? `Aaj ${rem} kcal aur kha sakte ho` : `Target se ${-rem} kcal zyada ho gaya`;
+  rt.textContent = eaten === 0 ? 'Aaj abhi tak kuch nahi joda' : rem >= 0 ? (bonus ? `Aaj ${rem} kcal aur kha sakte ho (walk se +${bonus})` : `Aaj ${rem} kcal aur kha sakte ho`) : `Target se ${-rem} kcal zyada ho gaya`;
   $('#todayList').innerHTML = listHTML(dayKey(Date.now()));
   $('#todayNut').innerHTML = nutHTML(t, dayEntries(dayKey(Date.now())));
-  renderWater(); renderWeight();
+  renderWater(); renderWeight(); renderWalk();
   $('#todo').innerHTML = todoHTML();
   $('#nutSum').textContent = `— ${nutOkCount(t)}/10 theek`;
   $('#hello').textContent = `Namaste${profile && profile.name ? ', ' + profile.name.split(' ')[0] : ''} 👋`;
-  $('#checkBox').innerHTML = checkHTML(dayKey(Date.now()), true);
+  $('#checkBox').innerHTML = reportHTML(dayKey(Date.now()), true);
 }
 function listHTML(k) {
   const list = dayEntries(k);
@@ -995,7 +1066,7 @@ async function onPick(file) {
   openSheet(`<div class="scanhead"><img class="thumb" src="${img.url}" alt="Scan ho rahi photo"><div><h3>Scan ho raha hai…</h3><p class="muted small">AI khana pehchan raha hai, 5–15 second</p><div class="loader"></div></div></div>`);
   try {
     const al = profile && (profile.allergy || '').trim();
-    const j = parseJSON(await aiCall(SCAN_PROMPT + (al ? `\nThe user is allergic to / cannot eat: ${al}. If any item may contain it, clearly warn in health_note.` : ''), img.b64));
+    const j = parseJSON(await aiCall(SCAN_PROMPT + (al ? `\nThe user is allergic to / cannot eat: ${al}. If any item may contain it, clearly warn in health_note.` : '') + aiLang(), img.b64));
     if (pending !== me) return; // sheet band ho gayi
     if (!j.is_food || !Array.isArray(j.items) || !j.items.length) {
       openSheet(`<img class="thumb big" src="${img.url}" alt="Scan ki gayi photo"><h3>Is photo mein khana nahi dikha</h3><p class="muted">Thali upar se, achhi roshni mein photo lo. Ya item khud chuno.</p><div class="row"><button class="btn primary" id="retake">Dobara photo</button><button class="btn" id="addMore">Khud chuno</button></div>`);
@@ -1096,7 +1167,7 @@ function renderHistory() {
   $('#hTitle').textContent = fmtDay(histSel);
   $('#hTot').textContent = Math.round(sum(dayEntries(histSel)).cal) + ' kcal';
   $('#hList').innerHTML = listHTML(histSel);
-  $('#hCheck').innerHTML = checkHTML(histSel, histSel === dayKey(Date.now()));
+  $('#hCheck').innerHTML = reportHTML(histSel, true);
   $('#hNut').innerHTML = nutHTML(sum(dayEntries(histSel)), dayEntries(histSel));
 }
 
@@ -1124,9 +1195,9 @@ function suggestions() {
     if ((t.vd || 0) < n.vd * .5) out.push(['Vitamin D', 'Subah 15–20 min dhoop lo (haath-chehra khule). Thakaan ya haddi mein dard rehta ho to test karwa ke doctor se poochho.', 0]);
   }
   if (profile && (profile.bad || []).length) { const b = profile.bad, id = b[Math.floor(Date.now() / 864e5) % b.length]; out.push([`Aaj ki aadat: ${hLabel(BAD_HABITS, id)}`, HABIT_TIPS[id], 0]); }
-  const yk = dayKey(Date.now() - 864e5), yc = checks[yk];
-  if (yc && (yc.bad || []).length) out.push([`Kal ki galti: ${hLabel(CI_BAD, yc.bad[0])}`, HABIT_TIPS[yc.bad[0]] || 'Aaj isse bachna.', 1]);
-  if (h >= 19 && !checks[dayKey(Date.now())]) out.push(['Aaj ka din kaise gaya?', '"Aaj" tab mein 30 second mein likho — achha kya kiya, galti kya hui.', 0]);
+  const yr = analyzeDay(dayKey(Date.now() - 864e5));
+  if (yr && yr.bad.length) { const b = yr.bad.slice().sort((x, y) => y.w - x.w)[0]; out.push([`Kal ki galti: ${b.text}`, b.tip || 'Aaj isse bachna.', 1]); }
+  if (h >= REPORT_HOUR && t.cal) out.push(['Aaj ki report dekho', '"Aaj" tab mein app ne aapke din ka hisaab bana diya hai — galtiyan aur kal ke liye salah.', 0]);
   const week = [...Array(7)].map((_, i) => sum(dayEntries(dayKey(Date.now() - i * 864e5))).cal).filter(x => x > 0);
   if (week.length >= 4) {
     const avg = Math.round(week.reduce((a, b) => a + b, 0) / week.length);
@@ -1185,6 +1256,112 @@ function saveProblems() {
   toast(activeProbs().length ? 'Diet plan problem ke hisaab se set ho gaya' : 'Koi problem nahi chuni — normal plan');
   $('#plan').scrollIntoView({behavior: 'smooth', block: 'start'});
 }
+/* ---------- Walk / steps ---------- */
+let steps = Object.assign({goal: 0, log: {}}, LS.get('cd_steps', {}));
+const stepGoal = () => steps.goal || (profile && profile.goal === 'lose' ? 8000 : 7000);
+const dayStep = k => steps.log[k] || {n: 0, sec: 0};
+const stepToday = () => dayStep(dayKey(Date.now())).n;
+const stepsUsed = () => Object.keys(steps.log).some(k => Date.now() - new Date(k).getTime() < 8 * 864e5 && steps.log[k].n > 0);
+function saveSteps() { const ks = Object.keys(steps.log).sort().slice(-90), l = {}; ks.forEach(k => { l[k] = steps.log[k]; }); steps.log = l; LS.set('cd_steps', steps); }
+const strideCm = () => profile ? profile.height * (profile.gender === 'f' ? .413 : .415) : 70;
+function walkCalc(n) { const km = n * strideCm() / 100000, kg = profile ? profile.weight : 70; return {km, kcal: Math.round(kg * km * .5)}; }
+const walkBonus = k => Math.round(walkCalc(dayStep(k).n).kcal * .5);          // jali calorie ka aadha hi khane mein
+const fmtN = n => Number(n).toLocaleString('en-IN');
+function walkHTML() {
+  const k = dayKey(Date.now()), d = dayStep(k), g = stepGoal(), w = walkCalc(d.n), pct = Math.min(100, d.n / g * 100);
+  const days = [...Array(7)].map((_, i) => { const dt = new Date(); dt.setDate(dt.getDate() - (6 - i)); const kk = dayKey(dt); return {n: dayStep(kk).n, l: DAYS[dt.getDay()], on: kk === k}; });
+  const mx = Math.max(g, ...days.map(x => x.n));
+  return `<div class="wcard"><div class="wh"><b>🚶 Aaj ki walk</b><button class="linkbtn" data-sgoal="1">Goal: ${fmtN(g)}</button></div>
+    <div><span class="wtbig">${fmtN(d.n)}</span> <span class="small muted">steps</span></div>
+    <div class="nb" style="margin:8px 0"><i style="width:${pct}%;background:#E8833A"></i></div>
+    <div class="small">${w.km.toFixed(2)} km • 🔥 ${w.kcal} kcal burn${d.sec >= 60 ? ` • ⏱ ${Math.round(d.sec / 60)} min` : ''}</div>
+    <div class="minibars" aria-hidden="true">${days.map(x => `<div class="mb${x.on ? ' on' : ''}"><i style="height:${Math.max(4, x.n / mx * 100)}%"></i><span>${x.l}</span></div>`).join('')}</div>
+    <div class="row"><button class="btn primary" data-walk="1">🚶 Walk shuru karo</button><button class="btn" data-sedit="1">✏️ Steps likho</button></div>
+    <p class="small muted" style="margin:8px 0 0">Walk ke time app khula rakho (screen on). Phone ke Health / Fit app mein steps dikhte hain to "Steps likho" se daal do.</p></div>`;
+}
+function renderWalk() { $('#walkBox').innerHTML = walkHTML(); }
+let wk = null;
+async function startWalk() {
+  if (!('DeviceMotionEvent' in window)) { toast('Is phone mein motion sensor nahi mila — "Steps likho" use karo'); return; }
+  try { if (typeof DeviceMotionEvent.requestPermission === 'function' && await DeviceMotionEvent.requestPermission() !== 'granted') { toast('Motion sensor ki permission chahiye'); return; } } catch (e) {}
+  wk = {start: Date.now(), n: 0, pend: 0, last: 0, avg: 9.8, sm: 9.8, up: false, got: false, lock: null, saved: 0};
+  window.addEventListener('devicemotion', onMotion);
+  try { if (navigator.wakeLock) wk.lock = await navigator.wakeLock.request('screen'); } catch (e) {}
+  $('#walk').hidden = false; document.body.style.overflow = 'hidden';
+  $('#wkStatus').textContent = 'Walk chal rahi hai… chalte raho 🚶';
+  wkDraw(); wk.timer = setInterval(wkDraw, 1000);
+  setTimeout(() => { if (wk && !wk.got) $('#wkStatus').textContent = 'Sensor se data nahi aa raha — "Steps likho" use karo'; }, 3000);
+}
+function onMotion(e) {
+  if (!wk) return;
+  const a = e.accelerationIncludingGravity; if (!a || a.x == null) return;
+  wk.got = true;
+  const m = Math.hypot(a.x, a.y, a.z), t = e.timeStamp || performance.now();
+  wk.sm = wk.sm * .7 + m * .3; wk.avg = wk.avg * .98 + m * .02;
+  if (!wk.up && wk.sm > wk.avg + 1.2) {
+    wk.up = true;
+    const gap = t - wk.last;
+    if (gap > 280) {
+      if (gap > 2000) wk.pend = 0;
+      wk.pend++;
+      if (wk.pend >= 4) { bumpSteps(wk.pend === 4 ? 4 : 1, wk.last && gap < 2000 ? gap / 1000 : 0); }
+      wk.last = t;
+    }
+  } else if (wk.up && wk.sm < wk.avg + .4) wk.up = false;
+}
+function bumpSteps(add, sec) {                         // 4 lagataar kadam ke baad hi ginti — haath hilane se nahi
+  const k = dayKey(Date.now()), d = steps.log[k] || {n: 0, sec: 0};
+  d.n += add; d.sec = (d.sec || 0) + sec; steps.log[k] = d; wk.n += add;
+  if (wk.n - wk.saved >= 10) { saveSteps(); wk.saved = wk.n; }
+  $('#wkSteps').textContent = fmtN(wk.n);
+}
+function wkDraw() {
+  if (!wk) return;
+  const w = walkCalc(wk.n), s = Math.floor((Date.now() - wk.start) / 1000);
+  $('#wkSteps').textContent = fmtN(wk.n); $('#wkKm').textContent = w.km.toFixed(2); $('#wkKcal').textContent = w.kcal;
+  $('#wkTime').textContent = Math.floor(s / 60) + ':' + pad(s % 60);
+  if (wk.lock && wk.lock.released && document.visibilityState === 'visible' && navigator.wakeLock) navigator.wakeLock.request('screen').then(l => { if (wk) wk.lock = l; }).catch(() => {});
+}
+function stopWalk() {
+  if (!wk) return;
+  window.removeEventListener('devicemotion', onMotion); clearInterval(wk.timer);
+  try { if (wk.lock) wk.lock.release(); } catch (e) {}
+  const n = wk.n, w = walkCalc(n); wk = null; saveSteps();
+  $('#walk').hidden = true; document.body.style.overflow = '';
+  renderAll(); toast(`Walk khatam: ${n} steps, ~${w.kcal} kcal burn 👏`);
+}
+function editSteps() {
+  const v = prompt('Aaj ke kul steps kitne hue? (phone ke Health / Fit app se dekh ke)', stepToday() || '');
+  if (v === null) return;
+  const n = parseInt(String(v).replace(/[^\d]/g, ''), 10);
+  if (!(n >= 0 && n <= 100000)) { toast('0 se 100000 ke beech likho'); return; }
+  const k = dayKey(Date.now()), d = steps.log[k] || {n: 0, sec: 0}; d.n = n; d.src = 'manual'; steps.log[k] = d; saveSteps(); renderAll(); toast('Steps save ho gaye');
+}
+function editStepGoal() {
+  const v = prompt('Roz ka steps goal kitna rakhein?', stepGoal());
+  if (v === null) return;
+  const n = parseInt(String(v).replace(/[^\d]/g, ''), 10);
+  if (!(n >= 1000 && n <= 30000)) { toast('1000 se 30000 ke beech likho'); return; }
+  steps.goal = n; saveSteps(); renderAll(); toast('Steps goal set ho gaya');
+}
+
+/* ---------- Start screen (welcome dashboard) ---------- */
+let afterWelcome = null;
+function drawWelcome() {
+  const en = LANG === 'en', P = profile;
+  $('#wlLang').textContent = en ? 'हिं' : 'EN';
+  $('#wlHello').textContent = P && P.name ? (en ? 'Hello, ' : 'Namaste, ') + P.name.split(' ')[0] + ' 👋' : '';
+  $('#wlFoot').textContent = en ? 'Your health, our priority' : 'आपका स्वास्थ्य, हमारी प्राथमिकता';
+  $('#wlGo').textContent = P ? (en ? 'Continue →' : 'Aage badho →') : 'Get Started';
+  const st = $('#wlStats');
+  if (P) {
+    const c = calc(), t = sum(dayEntries(dayKey(Date.now())));
+    st.innerHTML = `<div><b>${Math.round(t.cal)}</b><span>/ ${c.target} ${en ? 'kcal eaten' : 'kcal khaya'}</span></div><div><b>${waterToday()}/${Math.ceil(waterGoal() / GLASS)}</b><span>💧 ${en ? 'glasses' : 'glass paani'}</span></div><div><b>${fmtN(stepToday())}</b><span>🚶 steps</span></div>`;
+    st.hidden = false;
+  } else st.hidden = true;
+}
+function closeWelcome() { $('#welcome').hidden = true; document.body.style.overflow = ''; const f = afterWelcome; afterWelcome = null; if (f) f(); }
+
 /* ---------- Paani (wazan ke hisaab se) ---------- */
 const GLASS = 250;
 let water = Object.assign({goal: 0, ok: false, log: {}}, LS.get('cd_water', {}));
@@ -1248,11 +1425,11 @@ async function runAsk() {
 Person: ${profile ? `${profile.gender === 'm' ? 'male' : 'female'}, age ${profile.age}, ${profile.height} cm, ${profile.weight} kg, goal: ${{lose: 'lose weight', keep: 'maintain weight', gain: 'gain weight'}[profile.goal]}` : 'profile unknown'}. Diet type: ${dietTxt}.
 ${ap.length ? 'Health problems: ' + ap.map(probLabel).join('; ') + '.' : ''}
 ${habitsTxt()}${healthTxt()}
-Today so far: target ${c.target} kcal, eaten ${Math.round(t.cal)} kcal, remaining ${Math.max(0, Math.round(c.target - t.cal))} kcal; protein ${Math.round(t.p)}/${n.p} g; sodium ${Math.round(t.na)}/${n.na} mg; sugar-type carbs matter if diabetic. Time now: ${now.getHours()}:${pad(now.getMinutes())}.
+Today so far: target ${c.target} kcal, eaten ${Math.round(t.cal)} kcal, remaining ${Math.max(0, Math.round(c.target - t.cal))} kcal; protein ${Math.round(t.p)}/${n.p} g; sodium ${Math.round(t.na)}/${n.na} mg; walked ${stepToday()} steps (~${walkCalc(stepToday()).kcal} kcal burned); sugar-type carbs matter if diabetic. Time now: ${now.getHours()}:${pad(now.getMinutes())}.
 Decide: should they eat it now, and exactly how much? If it is not suitable (health problem, diet type rules, too much sugar/salt/fat, or too few calories left), verdict "nahi" and give healthier substitutes. If okay only in small amount, verdict "thoda". Never advise stopping medicines.
 Reply ONLY valid JSON:
 {"item":"short Hinglish name","verdict":"haan|thoda|nahi","qty":"how much to eat now in household units with grams, e.g. 10-12 pc (15 g); empty if nahi","calories":0,"protein_g":0,"carbs_g":0,"fat_g":0,"sodium_mg":0,"magnesium_mg":0,"potassium_mg":0,"zinc_mg":0,"vitamin_d_mcg":0,"vitamin_c_mg":0,"why":["2-3 short Hinglish reasons"],"substitutes":["2-4 better options with quantity, Hinglish"],"tip":"one short practical Hinglish tip"}
-Nutrient numbers are for the suggested qty only. If the image has no food, item "" and verdict "nahi".`;
+Nutrient numbers are for the suggested qty only. If the image has no food, item "" and verdict "nahi". Keep "verdict" exactly haan / thoda / nahi.` + aiLang();
   try {
     const j = parseJSON(await aiCall(prompt, ask.b64 || null, 1500));
     if (ask !== me) return;
@@ -1289,17 +1466,25 @@ const TOUR = [
   ['👋', 'Calorie Diagnosis mein swagat hai', ['Yeh app aapka roz ka khana, paani aur wazan dekh ke <b>wazan kam karne</b> mein madad karta hai.', 'Sirf 6 chhoti baatein — 1 minute mein samajh lo.']],
   ['📷', 'Khana jodo', ['<b>Photo khicho / Gallery</b>: thali ki photo do — AI har cheez ki calorie aur poshan nikaalega.', 'Portion <b>− / +</b> se theek karo, phir <b>"Diary mein jodo"</b>.', '<b>Khud likho</b>: list se roti, dal jaisa item chuno.']],
   ['🤔', 'Khane se pehle pucho', ['<b>"Kya kha sakta hu?"</b> mein photo lo — jaise pista, mithai, namkeen.', 'App batayega: ✅ kha sakte ho / ⚠️ thoda sa / ❌ abhi mat khao — aur <b>kitna</b>.', 'Mana kare to <b>badle mein kya khayein</b> woh bhi batayega.']],
-  ['✅', 'Roz ke kaam (1 minute)', ['💧 Har glass paani par <b>"+1 glass"</b> dabao.', '⚖️ Hafte mein 1 baar <b>wazan daalo</b> — kitna kam hua dikhega.', '📝 Raat ko <b>"Aaj ka din kaise gaya"</b> — galtiyan <span style="color:var(--chili);font-weight:700">laal line</span> mein dikhengi.']],
+  ['✅', 'Roz ke kaam (1 minute)', ['💧 Har glass paani par <b>"+1 glass"</b> dabao.', '⚖️ Hafte mein 1 baar <b>wazan daalo</b> — kitna kam hua dikhega.', '📊 Raat ko app <b>din ki report</b> dega — galtiyan <span style="color:var(--chili);font-weight:700">laal line</span> mein, saath mein kal ke liye salah.']],
   ['🥗', 'Diet tab', ['🔥 Aapka <b>calorie hisaab</b> aur 🩺 <b>problem chart</b>.', '🤖 Roz <b>1 baar AI se naya diet plan</b> — raat 12 baje phir khulta hai.', '📤 Plan <b>WhatsApp</b> par share bhi kar sakte ho.']],
-  ['⚙️', 'History aur Settings', ['📅 <b>History</b>: pichhle din ka khana, poshan aur hisaab.', '⚙️ <b>Settings</b>: profile, dawai, backup.', 'Upar <b>?</b> button se yeh guide kabhi bhi dobara dekho.']]
+  ['⚙️', 'History aur Settings', ['📅 <b>History</b>: pichhle din ka khana, poshan aur report.', '⚙️ <b>Settings</b>: profile, dawai, backup, bhasha (English).', 'Upar <b>?</b> button se yeh guide kabhi bhi dobara dekho.']]
+];
+const TOUR_EN = [
+  ['👋', 'Welcome to Calorie Diagnosis', ['This app watches your daily food, water and weight to help you <b>lose weight</b>.', 'Just 6 small things — learn them in 1 minute.']],
+  ['📷', 'Add food', ['<b>Take photo / Gallery</b>: give a photo of your plate — AI finds calories and nutrition of each item.', 'Fix the portion with <b>− / +</b>, then tap <b>"Add to diary"</b>.', '<b>Type it</b>: pick roti, dal and more from the list.']],
+  ['🤔', 'Ask before eating', ['In <b>"Can I eat this?"</b> take a photo — like pistachios, sweets, namkeen.', 'The app says: ✅ you can eat / ⚠️ only a little / ❌ not now — and <b>how much</b>.', 'If it says no, it also tells <b>what to eat instead</b>.']],
+  ['✅', 'Daily tasks (1 minute)', ['💧 Tap <b>"+1 glass"</b> for every glass of water.', '⚖️ <b>Add your weight</b> once a week — see how much you lost.', '📊 At night the app gives your <b>day report</b> — mistakes in <span style="color:var(--chili);font-weight:700">red</span> with advice for tomorrow.']],
+  ['🥗', 'Diet tab', ['🔥 Your <b>calorie numbers</b> and 🩺 <b>problem chart</b>.', '🤖 <b>1 new AI diet plan a day</b> — unlocks again at midnight.', '📤 Share the plan on <b>WhatsApp</b>.']],
+  ['⚙️', 'History and Settings', ['📅 <b>History</b>: food, nutrition and report of past days.', '⚙️ <b>Settings</b>: profile, medicines, backup, language.', 'Use the <b>?</b> button on top to see this guide again.']]
 ];
 let tourI = 0;
 function openTour() { tourI = 0; $('#tour').hidden = false; document.body.style.overflow = 'hidden'; drawTour(); }
 function closeTour() { $('#tour').hidden = true; LS.set('cd_tour', 1); if ($('#onb').hidden && $('#quiz').hidden) document.body.style.overflow = ''; }
 function drawTour() {
-  const [ic, t, lines] = TOUR[tourI], last = tourI === TOUR.length - 1;
+  const TT = LANG === 'en' ? TOUR_EN : TOUR, [ic, t, lines] = TT[tourI], last = tourI === TT.length - 1;
   $('#tourIn').innerHTML = `<div class="qtop"><span class="qn">${tourI + 1} / ${TOUR.length}</span><button class="qb" data-tx="1" aria-label="Band karo">×</button></div>
-    <div class="tour-card"><div class="tbig">${ic}</div><h2>${t}</h2><ul>${lines.map(l => `<li>${l}</li>`).join('')}</ul></div>
+    <div class="tour-card" data-notr><div class="tbig">${ic}</div><h2>${t}</h2><ul>${lines.map(l => `<li>${l}</li>`).join('')}</ul></div>
     <div class="dots">${TOUR.map((_, i) => `<i class="${i === tourI ? 'on' : ''}"></i>`).join('')}</div>
     <div class="row">${tourI ? '<button class="btn" data-tp="1">← Wapas</button>' : ''}<button class="btn primary" data-tn="1">${last ? '✅ Samajh gaya, shuru karo' : 'Aage →'}</button></div>`;
   $('#tour').scrollTop = 0;
@@ -1315,7 +1500,7 @@ function maybeTour() { if (!LS.get('cd_tour', 0) && profile && $('#quiz').hidden
 function todoHTML() {
   const k = dayKey(Date.now()), n = dayEntries(k).length, wg = Math.ceil(waterGoal() / GLASS), w = waterToday(), last = wlog[wlog.length - 1];
   const wtOk = last && (Date.now() - new Date(last.d).getTime()) <= 7 * 864e5;
-  const items = [['s-add', '🍽️', 'Khana', n ? n + ' item' : 'jodo', n > 0], ['waterBox', '💧', 'Paani', `${w}/${wg}`, w >= wg], ['weightBox', '⚖️', 'Wazan', wtOk ? 'ho gaya' : 'daalo', wtOk], ['checkBox', '📝', 'Din', checks[k] ? 'likh diya' : 'raat ko', !!checks[k]]];
+  const items = [['s-add', '🍽️', 'Khana', n ? n + ' item' : 'jodo', n > 0], ['waterBox', '💧', 'Paani', `${w}/${wg}`, w >= wg], ['walkBox', '🚶', 'Walk', (stepToday() / 1000).toFixed(1) + 'k', stepToday() >= stepGoal()], (() => { const r = analyzeDay(k); return ['checkBox', '📊', 'Report', r ? r.score + '/10' : 'khana jodo', !!r && !r.partial && r.score >= 8]; })()];
   return items.map(([id, ic, l, sub, ok]) => `<button class="${ok ? 'done' : ''}" data-jumpt="${id}"><span>${ok ? '✅' : ic}</span><b>${l}</b><br>${sub}</button>`).join('');
 }
 function nutOkCount(t) {
@@ -1335,7 +1520,7 @@ function healthTxt() {
 /* ---------- Aadatein ---------- */
 const BAD_HABITS = [['sweet', 'Meetha / mithai zyada'], ['fried', 'Tala hua / namkeen'], ['late', 'Raat ko der se khana'], ['snack', 'Baar-baar snacks'], ['cold', 'Cold drink / packet juice'], ['chai', 'Cheeni wali chai 2+ cup'], ['outside', 'Bahar ka khana / fast food'], ['water', 'Paani kam peena'], ['skip', 'Nashta skip karna'], ['stress', 'Tension / bore hone par khana'], ['portion', 'Ek baar mein zyada khana'], ['screen', 'TV / mobile dekhte hue khana']];
 const GOOD_HABITS = [['walk', 'Roz walk / exercise'], ['time', 'Time par khana'], ['salad', 'Roz salad / sabzi'], ['fruit', 'Roz fal'], ['water', 'Paani achha peete ho'], ['home', 'Zyada ghar ka khana'], ['sleep', 'Neend poori'], ['niyam', 'Upvas / niyam se khana']];
-const HABIT_TIPS = {sweet: 'Meethe ki talab ho to 1 khajoor ya thoda fal lo, mithai nahi.', fried: 'Tala hua hafte mein 1 baar tak. Namkeen ki jagah bhuna chana ya makhana.', late: 'Raat ka khana sone se 2–3 ghante pehle khatam karo.', snack: 'Snack ka time fix karo — shaam 5 baje, sirf 1 katori.', cold: 'Cold drink ki jagah chaas ya nimbu paani (kam cheeni).', chai: 'Chai mein cheeni aadhi karo, phir dheere-dheere band.', outside: 'Bahar khana pade to roti-dal-sabzi chuno, tala hua nahi.', water: 'Har ghante 1 glass paani — phone mein alarm laga lo.', skip: 'Nashta skip mat karo — isse baad mein zyada bhookh lagti hai.', stress: 'Tension mein khane se pehle 10 min walk ya 1 glass paani.', portion: 'Choti plate lo, pehle salad khao, phir roti.', screen: 'TV / mobile band karke khao — dhyan se khaane par kam khaate hain.', nowalk: 'Kal 20–30 min walk zaroor — khane ke baad 10 min bhi chalega.'};
+const HABIT_TIPS = {sweet: 'Meethe ki talab ho to 1 khajoor ya thoda fal lo, mithai nahi.', fried: 'Tala hua hafte mein 1 baar tak. Namkeen ki jagah bhuna chana ya makhana.', late: 'Raat ka khana sone se 2–3 ghante pehle khatam karo.', snack: 'Snack ka time fix karo — shaam 5 baje, sirf 1 katori.', cold: 'Cold drink ki jagah chaas ya nimbu paani (kam cheeni).', chai: 'Chai mein cheeni aadhi karo, phir dheere-dheere band.', outside: 'Bahar khana pade to roti-dal-sabzi chuno, tala hua nahi.', water: 'Har ghante 1 glass paani — phone mein alarm laga lo.', skip: 'Nashta skip mat karo — isse baad mein zyada bhookh lagti hai.', stress: 'Tension mein khane se pehle 10 min walk ya 1 glass paani.', portion: 'Choti plate lo, pehle salad khao, phir roti.', screen: 'TV / mobile band karke khao — dhyan se khaane par kam khaate hain.', nowalk: '20–30 min walk zaroor — khane ke baad 10 min bhi chalega.'};
 const hLabel = (list, id) => (list.find(x => x[0] === id) || [id, id])[1];
 function habitsTxt() {
   if (!profile) return '';
@@ -1404,6 +1589,136 @@ function autoLines(k) {
   if (w >= wg) g.push('Paani poora piya'); else if (w < wg * .6) b.push(`Paani kam (${(w / 1000).toFixed(1)} / ${(wg / 1000).toFixed(1)} L)`);
   return {g, b};
 }
+/* ---------- Bhasha: Hindi (Hinglish, source) / English ---------- */
+let LANG = LS.get('cd_lang', 'hi');
+const EN = {"Calorie Diagnosis":"Calorie Diagnosis","Namaste 👋":"Hello 👋","Namaste, {s} 👋":"Hello, {s} 👋","Band karo":"Close","App kaise chalayein":"How to use the app","Aaj":"Today","History":"History","Diet":"Diet","Settings":"Settings","Menu":"Menu","Aaj abhi tak kuch nahi joda":"Nothing added today yet","Aaj {n} kcal aur kha sakte ho":"You can eat {n} kcal more today","Target se {n} kcal zyada ho gaya":"{n} kcal over your target","Aaj {n} kcal khaya, target {n}":"Eaten {n} kcal today, target {n}","/ {n} kcal khaya":"/ {n} kcal eaten","Protein /{n}":"Protein /{n}","Aaj ke kaam":"Today's tasks","Khana":"Food","jodo":"add","{n} item":"{n} items","Paani":"Water","Wazan":"Weight","daalo":"add","ho gaya":"done","Din":"Day","Report":"Report","khana jodo":"add food","🍽️ Khana jodo":"🍽️ Add food","Jo bhi khaya, yahan se jodo — AI calorie aur poshan nikaal dega.":"Add whatever you ate — AI will work out calories and nutrition.","Photo khicho":"Take photo","Thali ya khane ki photo":"Photo of your plate or food","Gallery":"Gallery","Photo ya screenshot chuno":"Pick a photo or screenshot","Khud likho":"Type it","List se roti, dal… chuno":"Pick roti, dal… from list","Kya kha sakta hu?":"Can I eat this?","Khane se pehle AI se pucho":"Ask AI before eating","✅ Roz ke kaam":"✅ Daily tasks","Paani, wazan aur din ka hisaab — roz sirf {n} minute.":"Water, weight and your daily report — just {n} minute a day.","🧪 Aaj ka poshan":"🧪 Today's nutrition","— {n}/{n} theek":"— {n}/{n} on track","📋 Aaj ka khana":"📋 Today's food","Thali ki photo khicho ya khud likho — yahan dikhega.":"Take a photo or type it — it will show here.","Is din kuch nahi joda gaya.":"Nothing was added on this day.","Nashta":"Breakfast","Lunch":"Lunch","Shaam ka snack":"Evening snack","Dinner":"Dinner","Beech mein":"Mid-morning","Snack":"Snack","Dinner (suryast se pehle)":"Dinner (before sunset)","{s} hatao":"Remove {s}","{s} (scan)":"{s} (scan)","{s} (AI salah)":"{s} (AI advice)","Calorie":"Calories","Protein":"Protein","Carbs":"Carbs","Fat":"Fat","Sodium (namak)":"Sodium (salt)","Sodium":"Sodium","Magnesium":"Magnesium","Potassium":"Potassium","Zinc":"Zinc","Vitamin D":"Vitamin D","Vitamin C":"Vitamin C","/ {n} kcal tak":"/ {n} kcal max","/ {n} g tak":"/ {n} g max","/ {n} mg tak":"/ {n} mg max","/ {n} g":"/ {n} g","/ {n} mg":"/ {n} mg","/ {n} mcg":"/ {n} mcg","Poora ✓":"Done ✓","{n}%, {n} baaki":"{n}%, {n} left","{n}%, zyada":"{n}%, over","Vitamin D zyada tar subah ki dhoop ({n}–{n} min) se banta hai, khane se kam milta hai. Sab numbers andaza hain.":"Vitamin D mostly comes from morning sunlight ({n}–{n} min), very little from food. All numbers are estimates.","Kuch purani entries mein minerals/vitamins ka data nahi hai.":"Some old entries have no mineral/vitamin data.","💧 Aaj ka paani":"💧 Today's water","{n} / {n} glass ({n} / {n} L)":"{n} / {n} glasses ({n} / {n} L)","+{n} glass piya ({n} ml)":"+{n} glass drunk ({n} ml)","{n} glass kam":"{n} glass less","Aapke wazan ({s}) ke hisaab se roz":"Based on your weight ({s}), daily","Aapke wazan (andaza) ke hisaab se roz":"Based on your weight (estimate), daily","litre":"litres","(~{n} glass) paani sahi hai. Yahi target rakhein?":"(~{n} glasses) of water is right. Keep this target?","✓ Haan, theek hai":"✓ Yes, OK","✏️ Apna likho":"✏️ Enter my own","✏️ Target likho":"✏️ Enter target","Kidney problem mein roz kitna paani — yeh doctor batate hain. Doctor ka bataya target daalo.":"With a kidney problem, your doctor decides daily water. Enter the target your doctor gave.","Aaj ka paani poora ho gaya 🎉":"Today's water goal done 🎉","Paani ka target set ho gaya":"Water target set","Roz kitne litre paani? (jaise {n} ya {n})":"How many litres of water per day? (e.g. {n} or {n})","{n} se {n} litre ke beech likho":"Enter between {n} and {n} litres","⚖️ Wazan":"⚖️ Weight","shuru {n} → target {n} kg":"start {n} → target {n} kg","goal: wazan same":"goal: keep weight","BMI {n} — {s}":"BMI {n} — {s}","{n} — {s}":"{n} — {s}","Kam wazan":"Underweight","Sahi wazan":"Healthy weight","Zyada wazan":"Overweight","Bahut zyada wazan (motapa)":"Obese","{n} kg kam hua 🎉":"{n} kg lost 🎉","{n} kg zyada hua 🎉":"{n} kg gained 🎉","{n} kg baaki":"{n} kg to go","{n} kg baaki • ~{n} hafte ({s} {n} tak)":"{n} kg to go • ~{n} weeks (by {s} {n})","• {n} kg baaki • ~{n} hafte ({s} {n} tak)":"• {n} kg to go • ~{n} weeks (by {s} {n})","Is hafte wazan nahi daala":"Weight not added this week","⚖️ Aaj ka wazan daalo":"⚖️ Add today's weight","Aaj ka wazan kitna hai? (kg)":"What is your weight today? (kg)","{n} se {n} kg ke beech likho":"Enter between {n} and {n} kg","Badhai ho! Target wazan tak pahunch gaye 🎉🎉":"Congratulations! You reached your target weight 🎉🎉","Wazan save ho gaya — calorie target naye wazan se":"Weight saved — calorie target updated","Diary mein jod diya":"Added to diary","Hata diya":"Removed","\"{s}\" diary se hatayein?":"Remove \"{s}\" from diary?","Photo khul nahi payi":"Could not open the photo","Scan ho raha hai…":"Scanning…","AI khana pehchan raha hai, {n}–{n} second":"AI is recognising the food, {n}–{n} seconds","AI key nahi mili":"AI key not found","Photo se calorie nikalne ke liye Settings mein Gemini (free) ya Claude ki API key daalo. Tab tak item khud chun sakte ho.":"To get calories from photos, add a Gemini (free) or Claude API key in Settings. Until then you can pick items yourself.","Settings kholo":"Open Settings","Khud chuno":"Pick myself","Is photo mein khana nahi dikha":"No food found in this photo","Thali upar se, achhi roshni mein photo lo. Ya item khud chuno.":"Take the photo from above in good light. Or pick items yourself.","Dobara photo":"Photo again","Scan nahi ho paya":"Scan failed","Internet, API key aur model ka naam check karo.":"Check internet, API key and model name.","Photo mein ye mila":"Found in photo","Chune hue item":"Selected items","Abhi koi item nahi chuna.":"No item selected yet.","Kul":"Total","Meal":"Meal","Kab khaya":"When eaten","+ Aur item":"+ More items","Diary mein jodo":"Add to diary","Calorie AI ka andaza hai. Portion −/+ se sahi karo, galat item ka tick hatao.":"Calories are AI estimates. Adjust portion with −/+, untick wrong items.","Portion kam":"Less portion","Portion zyada":"More portion","Item chuno":"Pick item","Roti, dal, poha…":"Roti, dal, poha…","Khana dhundho":"Search food","List mein nahi hai? Apna item likho":"Not in list? Add your own item","Naam":"Name","Calorie (kcal)":"Calories (kcal)","Item jodo":"Add item","Chune hue {n} item dekho":"See {n} selected items","Nahi mila — neeche apna item likho.":"Not found — add your own item below.","{s} chuna":"{s} added","Naam aur calorie dono bharo":"Fill both name and calories","Is din":"This day","🤔 Kya kha sakta hu?":"🤔 Can I eat this?","Jo khana hai uski photo lo — jaise pista, mithai, namkeen ka packet. AI batayega kitna khana theek hai, ya mana karke badle mein kya khayein.":"Take a photo of what you want to eat — like pistachios, sweets, a snack packet. AI will tell how much is OK, or say no and suggest what to eat instead.","📷 Photo lo":"📷 Take photo","🖼️ Gallery":"🖼️ Gallery","Photo badlo":"Change photo","Sawaal (optional)":"Question (optional)","Jaise: kitne pista kha sakta hu?":"e.g. how many pistachios can I eat?","Photo nahi hai? Sawaal mein item ka naam likh do (jaise \"{n} gulab jamun\").":"No photo? Type the item name in the question (e.g. \"{n} gulab jamun\").","Salah lo":"Get advice","Photo lo ya item ka naam likho":"Take a photo or type the item name","Soch raha hai…":"Thinking…","Aapke aaj ke khane aur target ke hisaab se salah ban rahi hai":"Preparing advice based on today's food and your target","Salah nahi mil payi":"Could not get advice","Dobara try karo":"Try again","✅ Kha sakte ho":"✅ You can eat it","⚠️ Thoda sa hi khao":"⚠️ Only a little","❌ Abhi mat khao":"❌ Don't eat it now","Item pehchana nahi gaya":"Item not recognised","Kyun?":"Why?","Iske badle yeh khao":"Eat this instead","Aur behtar option":"Better options","➕ Diary mein jodo":"➕ Add to diary","Naya sawaal":"New question","AI ki salah andaza hai. Bimari mein doctor / dietitian ki baat maano.":"AI advice is an estimate. If you are ill, follow your doctor / dietitian.","📅 Pichle {n} din":"📅 Last {n} days","Bar par tap karo — us din ka khana aur hisaab neeche dikhega.":"Tap a bar — that day's food and report show below.","Pichle {n} din ki calorie":"Calories of last {n} days","Roz ka average (kcal)":"Daily average (kcal)","Din target ke andar":"Days within target","Koi bhi din dekho":"See any day","🧪 Us din ka poshan":"🧪 Nutrition that day","Target {n}":"Target {n}","Ravi":"Sun","Som":"Mon","Mangal":"Tue","Budh":"Wed","Guru":"Thu","Shukra":"Fri","Shani":"Sat","Diet ke hisse":"Diet sections","💡 Salah":"💡 Tips","🔥 Calorie":"🔥 Calories","🩺 Problem":"🩺 Problems","🥗 Diet plan":"🥗 Diet plan","💡 Aaj ke suggestions":"💡 Today's suggestions","Aapke aaj ke khane, paani aur aadaton ke hisaab se.":"Based on today's food, water and your habits.","🔥 Aapka calorie hisaab":"🔥 Your calorie numbers","Kitni calorie mein wazan same rahega, kam hoga ya badhega.":"Calories to keep, lose or gain weight.","Aaram mein kharch (BMR)":"Burned at rest (BMR)","Wazan same rakhne ke liye":"To keep weight","Halka wazan kam (~¼ kg / hafta)":"Slow weight loss (~¼ kg / week)","Wazan kam (~½ kg / hafta)":"Weight loss (~½ kg / week)","Tez wazan kam (~¾ kg / hafta)":"Fast weight loss (~¾ kg / week)","Wazan badhane ke liye (~¼ kg / hafta)":"To gain weight (~¼ kg / week)","Aapka abhi ka target:":"Your current target:","{n} kcal / din":"{n} kcal / day",". Isse kam ({n} kcal se neeche) khana doctor ki salah ke bina safe nahi.":". Eating less than this ({n} kcal) is not safe without a doctor.","Protein kam se kam {n} g • Paani {n} L roz":"Protein at least {n} g • Water {n} L daily","Settings mein profile bharo — yahan aapka poora calorie hisaab dikhega.":"Fill your profile in Settings — your full calorie numbers will show here.","🩺 Problem chart":"🩺 Problem chart","({n} point)":"({n} points)","Jo taklif ho woh chuno ya likho — diet plan usi hisaab se banega.":"Choose or type your health issues — the diet plan will follow them.","— Chuno —":"— Choose —","Apna likho…":"Type my own…","Detail (jaise sugar {n})":"Detail (e.g. sugar {n})","Problem likho":"Type the problem","Problem {n}":"Problem {n}","Problem {n} detail":"Problem {n} detail","Diet plan set karo":"Set diet plan","Diet plan problem ke hisaab se set ho gaya":"Diet plan set for your problems","Koi problem nahi chuni — normal plan":"No problem chosen — normal plan","Neeche aapka general plan hai. Roz {n} baar AI se naya plan bana sakte ho — raat {n} baje phir khulta hai.":"Below is your general plan. You can make {n} new AI plan a day — it unlocks again at {n} midnight.","{s} khana, {n} kcal roz ke hisaab se":"{s} food, for {n} kcal a day","{s} khana, {n} kcal roz ke hisaab se, {n} problem ke saath":"{s} food, for {n} kcal a day, with {n} problems","Shakahari":"Vegetarian","Jain":"Jain","Veg + anda":"Veg + egg","Non-veg":"Non-veg","Kul lagbhag {n} kcal":"Total about {n} kcal","Jain: pyaz, lahsun, aloo, gajar jaise zameen-kand nahi. Dinner suryast se pehle.":"Jain: no onion, garlic, potato, carrot or other root vegetables. Dinner before sunset.","Problem ke hisaab se salah":"Advice for your problems","✓ Khayein":"✓ Eat","✗ Kam / na khayein":"✗ Limit / avoid","Kam / na khayein":"Limit / avoid","Is problem ki list app mein nahi hai. \"AI se diet chart banao\" dabao — AI isko dhyan mein rakhega.":"This problem isn't in the app's list. Make an AI diet plan — AI will take it into account.","{s}: is haalat mein diet doctor / dietitian ki salah se hi badlein. Neeche ka chart sirf general jaankari hai.":"{s}: change your diet only with a doctor / dietitian's advice. The chart below is only general information.","🤖 AI se aaj ka diet plan banao":"🤖 Make today's AI diet plan","Naya plan ban raha hai…":"Making a new plan…","✅ Aaj ka plan ban gaya":"✅ Today's plan is ready","Naya plan raat {n} baje ke baad ({n} ghante {n} min baaki)":"New plan after {n} midnight ({n} h {n} min left)","Naya plan raat {n} baje ke baad ({n} min baaki)":"New plan after {n} midnight ({n} min left)","Aaj ka plan ban chuka hai — naya plan raat {n} baje ke baad":"Today's plan is done — new plan after {n} midnight","Aaj ka diet plan ban gaya ✅":"Today's diet plan is ready ✅","AI diet plan":"AI diet plan","Bana: {s}":"Made: {s}","Profile, problem ya target badal gaya hai — naya plan banao.":"Profile, problems or target changed — make a new plan.","Profile, problem ya target badal gaya hai — naya plan raat {n} baje ke baad banega.":"Profile, problems or target changed — a new plan can be made after {n} midnight.","Plan ka poshan — zaroorat vs plan":"Plan nutrition — need vs plan","Is plan mein poori tarah cover nahi hua: {s}. Upar ki salah ke hisaab se thoda jodo / ghatao.":"Not fully covered in this plan: {s}. Add / reduce a little as advised above.","Tips":"Tips","Pichhle {n} din mein {n} AI plan bane. Koi dish abhi {n} baar ki limit par nahi.":"In the last {n} days {n} AI plans were made. No dish has reached the {n}-time limit yet.","Pichhle {n} din mein {n} AI plan bane. {n} dish apni {n} baar ki limit par hain — woh agle plans mein nahi aayengi.":"In the last {n} days {n} AI plans were made. {n} dishes reached their {n}-time limit — they won't appear in the next plans.","{s}, mahine mein {n}/{n} baar":"{s}, {n}/{n} times this month","📤 Diet plan WhatsApp / share karo":"📤 Share diet plan on WhatsApp","Ye app calorie ka andaza deta hai, medical salah nahi. Problem chart wali salah general hai. Bimari mein diet badalne se pehle doctor / dietitian se baat karo, aur dawai apne aap band mat karo.":"This app gives calorie estimates, not medical advice. Problem chart advice is general. If you are ill, talk to a doctor / dietitian before changing your diet, and never stop medicines on your own.","AI baar-baar limit wali dish de raha hai, thodi der baad dobara try karo":"AI keeps giving limited dishes, try again after a while","Plan sahi format mein nahi aaya, dobara try karo":"Plan came in a wrong format, try again","AI ka jawab samajh nahi aaya, dobara try karo":"Could not understand the AI reply, try again","Google/AI ka server abhi busy hai. {n}–{n} minute baad dobara try karo.":"Google/AI server is busy. Try again in {n}–{n} minutes.","Server busy tha, isliye halke model se kiya":"Server was busy, so a lighter model was used","Settings mein AI key daalo":"Add AI key in Settings","Pehle profile bharo":"Fill your profile first","Aaj ka pehla meal scan karo":"Scan your first meal today","Thali ki photo lo — calorie apne aap jud jayegi.":"Take a photo of your plate — calories are added automatically.","Profile bharo":"Fill profile","Umar, wazan aur height se target aur diet chart aapke hisaab se banega.":"Your target and diet chart will be based on age, weight and height.","Target se {s} kcal upar":"{s} kcal over target","Koi baat nahi. Agla meal halka rakho (dal, sabzi, salad) aur {n}–{n} minute walk karo. Khana skip mat karo.":"No worries. Keep the next meal light (dal, veg, salad) and walk {n}–{n} minutes. Don't skip meals.","Dinner ke liye ~{s} kcal bache hain":"~{s} kcal left for dinner","Dal + {n} roti + sabzi + salad lagbhag {n} kcal hota hai — poora khana lo.":"Dal + {n} roti + veg + salad is about {n} kcal — have a full meal.","Sirf {s} kcal bache":"Only {s} kcal left","Chaas, fal ya sprouts jaisa halka option lo.":"Choose something light like buttermilk, fruit or sprouts.","{s} kcal aur le sakte ho":"You can have {s} kcal more","Plate mein aadha hissa sabzi-salad, ek chauthai dal/paneer, ek chauthai roti-chawal rakho.":"Fill half your plate with veg-salad, a quarter dal/paneer, a quarter roti-rice.","Kidney problem chuna hai":"Kidney problem selected","Protein, potassium, namak aur paani ki matra doctor ke hisaab se rakho. Neeche ke \"kam hai\" wale sujhav is haalat mein lagu nahi.":"Keep protein, potassium, salt and water as your doctor says. The \"low\" suggestions below don't apply here.","Protein kam hai ({s}g / {s}g)":"Protein is low ({s}g / {s}g)","Dal, paneer, dahi, sprouts, chana — agle meal mein jodo.":"Add dal, paneer, curd, sprouts or chana to the next meal.","Tel-ghee zyada lag raha hai":"Too much oil / ghee","Aaj ki calorie ka {n}% se zyada fat se aaya. Tadka kam, fried cheezein kam karo.":"More than {n}% of today's calories came from fat. Less tadka, less fried food.","Namak zyada: {s} mg sodium (limit {s})":"Too much salt: {s} mg sodium (limit {s})","Achaar, papad, namkeen, Maggi aur packaged cheezein kam karo. Sabzi-dal mein upar se namak mat daalo.":"Cut pickles, papad, namkeen, Maggi and packaged food. Don't add extra salt on dal-sabzi.","{s} kam hai ({s} / {s})":"{s} is low ({s} / {s})","Kela, nariyal paani, dal, palak, dahi, amrood — kal ke khane mein jodo.":"Add banana, coconut water, dal, spinach, curd, guava tomorrow.","Moongfali, badam, kaddu ke beej, palak, sabut anaaj aur dal.":"Peanuts, almonds, pumpkin seeds, spinach, whole grains and dal.","Chana, rajma, dal, kaddu ke beej, paneer, dahi.":"Chana, rajma, dal, pumpkin seeds, paneer, curd.","Roz ek amla, amrood, santra ya papita — ya khane par nimbu.":"One amla, guava, orange or papaya daily — or lemon on food.","Subah {n}–{n} min dhoop lo (haath-chehra khule). Thakaan ya haddi mein dard rehta ho to test karwa ke doctor se poochho.":"Get {n}–{n} min of morning sun (arms and face open). If you feel tired or have bone pain, get tested and ask a doctor.","Aaj ki aadat: {s}":"Today's habit: {s}","Kal ki galti: {s}":"Yesterday's mistake: {s}","Aaj isse bachna.":"Avoid it today.","Hafte ka average: {s} kcal":"Weekly average: {s} kcal","Average target se upar hai — snacks aur meethe par nazar rakho.":"Average is above target — watch snacks and sweets.","Average target se kaafi kam hai. Bahut kam khana bhi theek nahi — teeno time poora khana lo.":"Average is well below target. Eating too little isn't good — have three full meals.","Achha chal raha hai, aise hi rakho.":"Going well, keep it up.","Paani kam piya ({s} / {s} L)":"Drank too little water ({s} / {s} L)","Har ghante {n} glass piyo. Kai baar pyaas bhookh jaisi lagti hai.":"Drink {n} glass every hour. Thirst often feels like hunger.","Paani: roz {s} litre":"Water: {s} litres a day","Lagbhag {s} glass — \"Aaj\" tab par +{n} glass dabate raho.":"About {s} glasses — keep tapping +{n} glass on the \"Today\" tab.","Aaj ka din kaise gaya?":"How was your day?","\"Aaj\" tab mein {n} second mein likho — achha kya kiya, galti kya hui.":"Write in the \"Today\" tab in {n} seconds — what went well, what went wrong.","Aaj ki report dekho":"See today's report","\"Aaj\" tab mein app ne aapke din ka hisaab bana diya hai — galtiyan aur kal ke liye salah.":"On the \"Today\" tab the app has made your day's report — mistakes and advice for tomorrow.","Diabetes / Sugar":"Diabetes / Sugar","High BP":"High BP","Thyroid":"Thyroid","Acidity / Gas":"Acidity / Gas","Kabz (constipation)":"Constipation","Cholesterol / Heart":"Cholesterol / Heart","Uric acid / Joint dard":"Uric acid / Joint pain","PCOD / PCOS":"PCOD / PCOS","Khoon ki kami (Anemia)":"Anemia (low blood)","Kidney problem":"Kidney problem","Pregnancy / Baby feeding":"Pregnancy / Breastfeeding","Multigrain / jowar / bajra roti":"Multigrain / jowar / bajra roti","Har meal mein dal, paneer ya sprouts":"Dal, paneer or sprouts in every meal","Pehle salad-sabzi, phir roti":"Salad-veg first, then roti","Fal: seb, amrood, papita, jamun (thoda)":"Fruit: apple, guava, papaya, jamun (a little)","Cheeni, mithai, gud, shahad":"Sugar, sweets, jaggery, honey","Maida, white bread, Maggi":"Maida, white bread, Maggi","Juice, cold drink":"Juice, cold drinks","Aam, chikoo, angoor zyada":"Too much mango, chikoo, grapes","Chai-doodh bina cheeni":"Tea / milk without sugar","Khane ke baad {n}–{n} min walk":"Walk {n}–{n} min after meals","Sugar ki dawai / insulin ho to khana time par skip mat karo":"If on sugar medicine / insulin, don't skip meals","Kela, nariyal paani, dahi":"Banana, coconut water, curd","Hari sabzi, lauki, salad":"Green veg, bottle gourd, salad","Dalia, oats":"Dalia, oats","Bhuna chana (bina namak)":"Roasted chana (no salt)","Achaar, papad, namkeen":"Pickles, papad, namkeen","Khane mein upar se namak":"Extra salt on food","Packaged / instant food, Maggi":"Packaged / instant food, Maggi","Zyada chai-coffee":"Too much tea / coffee","Namak poore din mein {n} chhoti chammach se kam":"Less than {n} small spoon of salt a day","Roz {n} min walk":"Walk {n} min daily","BP ki dawai roz time par":"Take BP medicine on time daily","Protein: dal, paneer, dahi":"Protein: dal, paneer, curd","Iodine wala namak":"Iodised salt","Paki hui hari sabzi":"Cooked green vegetables","Soya aur kacchi gobhi bahut zyada":"Too much soya and raw cabbage","Dawai ke {n}–{n} min tak chai / nashta":"Tea / breakfast within {n}–{n} min of medicine","Dawai khaali pet lo, nashta {n}–{n} min baad":"Take medicine on an empty stomach, breakfast {n}–{n} min later","Chaas, dahi":"Buttermilk, curd","Lauki, tori, kaddu":"Bottle gourd, ridge gourd, pumpkin","Kela, papita":"Banana, papaya","Thoda-thoda, baar-baar khana":"Small, frequent meals","Khaali pet chai":"Tea on an empty stomach","Teekha, tala, masaledar":"Spicy, fried, masaledar food","Raat ko der se khana":"Eating late at night","Soda, cold drink":"Soda, cold drinks","Sone se {n}–{n} ghante pehle khana":"Eat {n}–{n} hours before sleep","Khane ke turant baad mat leto":"Don't lie down right after eating","Papita, amrood, seb (chilke ke saath)":"Papaya, guava, apple (with peel)","Hari sabzi, salad":"Green veg, salad","Chokar wali roti, dalia":"Whole-wheat (chokar) roti, dalia","{n}–{n} glass paani":"{n}–{n} glasses of water","Maida, biscuit, bakery":"Maida, biscuits, bakery","Tala hua zyada":"Too much fried food","Kam paani":"Too little water","Subah uthte hi {n}–{n} glass gunguna paani":"{n}–{n} glasses of warm water on waking","Roz walk":"Daily walk","Oats, dalia, sabut anaaj":"Oats, dalia, whole grains","Alsi, badam (thoda)":"Flaxseed, almonds (a little)","Hari sabzi, fal":"Green veg, fruit","Moong dal, sprouts":"Moong dal, sprouts","Ghee, makkhan, malai zyada":"Too much ghee, butter, cream","Tala hua, vanaspati / dalda":"Fried food, vanaspati / dalda","Mithai, bakery":"Sweets, bakery","Tel poore din mein {n}–{n} chammach tak":"Up to {n}–{n} spoons of oil a day","Zyada paani":"More water","Kam fat doodh-dahi":"Low-fat milk / curd","Santra, amla, hari sabzi":"Orange, amla, green veg","Cold drink, packaged juice":"Cold drinks, packaged juice","Non-veg, fish zyada":"Too much non-veg, fish","Sharab":"Alcohol","Roz {n}–{n} glass paani":"{n}–{n} glasses of water daily","Wazan dheere-dheere kam karo":"Lose weight slowly","Har meal mein protein":"Protein in every meal","Sabut anaaj, sprouts":"Whole grains, sprouts","Hari sabzi, alsi":"Green veg, flaxseed","Cheeni, maida, bakery":"Sugar, maida, bakery","Tala hua, junk food":"Fried food, junk food","Roz {n}–{n} min exercise":"{n}–{n} min exercise daily","Time par khana":"Eat on time","Palak, methi, chaulai (nimbu ke saath)":"Spinach, methi, amaranth (with lemon)","Gud-chana, til, khajoor":"Jaggery-chana, sesame, dates","Rajma, chole, dal":"Rajma, chole, dal","Anaar, amla (vitamin C)":"Pomegranate, amla (vitamin C)","Khane ke saath ya turant baad chai-coffee":"Tea / coffee with or right after meals","Chai khane se {n} ghanta door rakho":"Keep tea {n} hour away from meals","Hb test karwa ke doctor ki dawai lo":"Get an Hb test and take the doctor's medicine","Kidney mein protein, potassium, namak aur paani kitna lena hai — yeh doctor tay karte hain. App ka general plan aur \"kam hai\" wale suggestions follow mat karo.":"With kidney problems your doctor decides protein, potassium, salt and water. Don't follow the app's general plan or \"low\" suggestions.","Doodh, dahi, dal, hari sabzi, fal":"Milk, curd, dal, green veg, fruit","Kaccha / adhpaka khana":"Raw / half-cooked food","Diet karke wazan kam karna":"Dieting to lose weight","Is samay extra calorie aur protein chahiye. Doctor ki batayi dawai (iron, calcium) lete raho.":"You need extra calories and protein now. Keep taking the medicines your doctor gave (iron, calcium).","Doodh / chai (kam cheeni)":"Milk / tea (less sugar)","Doodh (kam cheeni)":"Milk (less sugar)","Doodh (bina cheeni)":"Milk (no sugar)","Doodh (chai khaali pet nahi)":"Milk (no tea on empty stomach)","Chai (kam cheeni)":"Tea (less sugar)","Chai (bina cheeni)":"Tea (no sugar)","Thepla / paratha (kam tel)":"Thepla / paratha (less oil)","Bajra / multigrain roti":"Bajra / multigrain roti","Roti / dalia (bina ghee)":"Roti / dalia (no ghee)","Methi thepla":"Methi thepla","Fal (seb / kela / papita)":"Fruit (apple / banana / papaya)","Fal (seb / amrood / papita)":"Fruit (apple / guava / papaya)","Fal (seb / papita / anaar)":"Fruit (apple / papaya / pomegranate)","Papita / amrood":"Papaya / guava","Fal":"Fruit","Dal":"Dal","Hari sabzi":"Green vegetable","Hari sabzi (bina kand)":"Green veg (no root veg)","Salad":"Salad","Kakdi salad":"Cucumber salad","Dahi":"Curd","Roti":"Roti","Multigrain roti":"Multigrain roti","Phulka":"Phulka","Chaas / green tea":"Buttermilk / green tea","Chaas":"Buttermilk","Chaas (bina namak)":"Buttermilk (no salt)","Chaas / green tea (bina namak)":"Buttermilk / green tea (no salt)","Sprouts / bhuna chana":"Sprouts / roasted chana","Sprouts":"Sprouts","Bhuna chana":"Roasted chana","Bhuna makhana / chana":"Roasted makhana / chana","Dal / kadhi":"Dal / kadhi","Moong dal / kadhi":"Moong dal / kadhi","Moong / tuar dal":"Moong / toor dal","Lauki / tori / bhindi sabzi":"Bottle gourd / ridge gourd / okra","Sabzi":"Vegetable","Boiled anda":"Boiled egg","Anda bhurji / egg curry":"Egg bhurji / egg curry","Roti / brown bread":"Roti / brown bread","Chicken / fish curry":"Chicken / fish curry","Omelette":"Omelette","{n} katori":"{n} bowl","{n} glass":"{n} glass","{n} plate":"{n} plate","{n} cup":"{n} cup","{n} pc":"{n} pc","{n} egg":"{n} eggs","{n} serving":"{n} serving","📤 Plan":"📤 Plan","👤 Meri profile":"👤 My profile","Umar (saal)":"Age (years)","Gender":"Gender","Purush":"Male","Mahila":"Female","Height (cm)":"Height (cm)","Wazan (kg)":"Weight (kg)","Roz ki activity":"Daily activity","Baithe-baithe kaam (dukaan / desk)":"Mostly sitting (shop / desk)","Thoda active (roz halka walk)":"Lightly active (daily light walk)","Active (roz exercise)":"Active (daily exercise)","Bahut active (bhaari mehnat)":"Very active (hard physical work)","Goal":"Goal","Wazan kam karna":"Lose weight","Wazan same rakhna":"Keep weight","Wazan badhana":"Gain weight","Target wazan (kg)":"Target weight (kg)","Speed":"Speed","¼ kg / hafta":"¼ kg / week","½ kg / hafta":"½ kg / week","¾ kg / hafta":"¾ kg / week","Apna calorie target (optional, kcal roz ka)":"My calorie target (optional, kcal per day)","Khaali chhodo = auto (jaise {n})":"Leave empty = auto (e.g. {n})","🩺 Sehat":"🩺 Health","Chal rahi dawai (naam, kitni, kab)":"Current medicines (name, dose, when)","Jaise: Metformin {n} — subah-shaam khane ke baad":"e.g. Metformin {n} — morning and evening after meals","Food allergy / jo suit nahi karta":"Food allergy / doesn't suit me","Jaise: moongfali, doodh":"e.g. peanuts, milk","Koi aur bimari / operation":"Any other illness / operation","Jaise: migraine, gallbladder operation {n}":"e.g. migraine, gallbladder operation {n}","Profile save karo":"Save profile","Profile save ho gayi":"Profile saved","Umar, height aur wazan sahi bharo":"Enter correct age, height and weight","Ye box roz ki calorie ka hai (jaise {n}), wazan ka nahi. Khaali chhodo to auto banega.":"This box is for daily calories (e.g. {n}), not weight. Leave empty for auto.","Target wazan abhi ke wazan se kam hona chahiye":"Target weight must be less than current weight","Target wazan abhi ke wazan se zyada hona chahiye":"Target weight must be more than current weight","Aadatein":"Habits","Neend: {s} ghante":"Sleep: {s} hours","Abhi nahi bhari — neeche \"saare sawaal\" se bharo.":"Not filled yet — use \"all questions\" below.","🔁 Saare sawaal dobara bharo":"🔁 Answer all questions again","Roz ki zaroorat":"Daily need","zyada se zyada {n} kcal":"max {n} kcal","zyada se zyada {n} g":"max {n} g","zyada se zyada {n} mg":"max {n} mg","{n} kcal":"{n} kcal","{n} g":"{n} g","{n} mg":"{n} mg","{n} mcg":"{n} mcg","Adult ke liye ICMR-NIN {n} ke aas-paas; sodium WHO limit. Pregnancy, bachche ya bimari mein zaroorat alag hoti hai.":"For adults, close to ICMR-NIN {n}; sodium is the WHO limit. Needs differ in pregnancy, for children or in illness.","Target {n} kcal se neeche nahi rakha. Isse kam khana doctor ya dietitian ki salah ke bina safe nahi hai.":"Target not set below {n} kcal. Eating less is not safe without a doctor or dietitian.","Pregnancy / feeding mein wazan kam karne wala target nahi lagaya.":"No weight-loss target during pregnancy / breastfeeding.","Pregnancy / feeding mein roz ke kharch se kam calorie ka target nahi lagaya.":"No below-maintenance target during pregnancy / breastfeeding.","🤖 AI scan setting":"🤖 AI scan settings","AI provider":"AI provider","Google Gemini (free key milti hai)":"Google Gemini (free key)","Anthropic Claude":"Anthropic Claude","Gemini API key":"Gemini API key","Gemini model":"Gemini model","Claude API key":"Claude API key","Claude model":"Claude model","Key: console.anthropic.com se banao (paid, credits chahiye).":"Key: create at console.anthropic.com (paid, needs credits).","AI setting save karo":"Save AI settings","AI setting save ho gayi":"AI settings saved","Test karo":"Test","Check ho raha hai…":"Checking…","Key sahi hai, scan chalega":"Key works, scanning will work","Jawab aaya par format alag hai":"Got a reply but in a different format","Pehle key daalo":"Add a key first","Error: {s}":"Error: {s}","🔒 Key lock hai ({s}). Yeh kabhi hategi nahi — badalni ho to neeche button se nayi sahi key lagao.":"🔒 Key is locked ({s}). It will never be removed — to change it, add a new valid key with the button below.","🔑 Key banane ka tareeka / nayi key lagao":"🔑 How to get a key / add a new key","Key sirf is phone mein save hoti hai, kahin aur nahi jaati.":"The key is saved only on this phone, it goes nowhere else.","💾 Backup":"💾 Backup","⬇️ Backup download":"⬇️ Download backup","⬆️ Backup restore":"⬆️ Restore backup","Roz {n} backup file apne aap download ho":"Download {n} backup file automatically every day","Auto backup (phone ke andar, pichhle {n} din)":"Auto backup (on this phone, last {n} days)","Abhi koi auto backup nahi — kal se yahan dikhega.":"No auto backup yet — it will show here from tomorrow.","Wapas laao":"Restore","{n} entry, {n}:{n} am":"{n} entries, {n}:{n} am","{n} entry, {n}:{n} pm":"{n} entries, {n}:{n} pm","{s} ka backup wapas laayein? (Abhi ki entries bhi rahengi)":"Restore the backup of {s}? (Current entries will stay)","Backup se {s} entry wapas aayi":"{s} entries restored from backup","Backup restore hua, {s} naye item":"Backup restored, {s} new items","Ye Calorie Diagnosis ki backup file nahi hai":"This is not a Calorie Diagnosis backup file","Purana data auto backup se wapas aa gaya":"Old data restored from auto backup","Saari diary mitao":"Delete whole diary","Saari diary (khane ki entries) mit jayegi. Pehle backup le liya?":"The whole diary (food entries) will be deleted. Did you take a backup?","Pakka mitana hai?":"Sure you want to delete?","Diary saaf ho gayi":"Diary cleared","Storage full hai — backup lekar purani diary mitao":"Storage is full — take a backup and delete old diary","📖 Madad":"📖 Help","📖 App kaise chalayein (guide)":"📖 How to use the app (guide)","🌐 Bhasha / Language":"🌐 Language","Calorie Diagnosis v{n}, Ankush New Vision":"Calorie Diagnosis v{n}, Ankush New Vision","API key guide":"API key guide","App shuru karne se pehle":"Before you start","Photo se calorie nikalne ke liye Google ki":"To get calories from photos you need Google's","free AI key (Gemini API key)":"free AI key (Gemini API key)","chahiye. Sirf {n} minute ka kaam hai — neeche ke step follow karo.":". It takes just {n} minutes — follow the steps below.","Yeh link kholo":"Open this link","Apne Google (Gmail) account se login karo.":"Log in with your Google (Gmail) account.","aistudio.google.com ↗":"aistudio.google.com ↗","API Keys → Create API key":"API Keys → Create API key","Left menu mein":"In the left menu open","API Keys":"API Keys","kholo (①), phir upar":"(①), then at the top tap","Create API key":"Create API key","dabao (②).":"(②).","Project chuno → Create key":"Choose project → Create key","Project wale box mein koi bhi project chuno (①) — list khaali ho to":"Choose any project in the project box (①) — if the list is empty choose","Create project":"Create project","chuno. Phir":". Then tap","Create key":"Create key","Copy key dabao":"Tap Copy key","Key ban jayegi (":"Your key is created (starts with","AIza…":"AIza…","ya":"or","AQ.…":"AQ.…","se shuru). Neeche":"). Below, tap","Copy key":"Copy key","dabao.":".","Key yahan paste karo":"Paste the key here","Neeche box mein key paste karo, ya":"Paste the key in the box below, or tap the","Paste":"Paste","button dabao. (Baad mein yeh key":"button. (Later this key shows in","Settings → AI scan setting":"Settings → AI scan settings","mein dikhegi.)":".)","Yahan API key paste karo":"Paste API key here","📋 Paste":"📋 Paste","📌 Apni API key kahin save karke rakhein — jaise WhatsApp mein \"Message yourself\" ya Notes mein. Kisi aur ko share na karein.":"📌 Save your API key somewhere safe — like WhatsApp \"Message yourself\" or Notes. Don't share it with anyone.","Continue":"Continue","Nayi key lagao / Band karo":"Add new key / Close","🔒 Abhi lagi key: {s} — nayi sahi key daaloge tabhi badlegi.":"🔒 Current key: {s} — it changes only when you add a new valid key.","Bina key ke photo scan nahi chalega, sirf \"Khud likho\" se entry hogi. Phir bhi aage badhein?":"Without a key photo scan won't work, only \"Type it\" entries. Continue anyway?","Key poori copy nahi hui — AI Studio mein dobara \"Copy key\" dabao":"Key not fully copied — tap \"Copy key\" again in AI Studio","Key check ho rahi hai…":"Checking key…","Yeh key sahi nahi hai — dobara copy karke paste karo":"This key is not valid — copy and paste it again","Key lag gayi aur lock ho gayi 🔒":"Key added and locked 🔒","Key save ho gayi 🔒 (server busy tha — scan baad mein chalega)":"Key saved 🔒 (server was busy — scanning will work later)","Box mein daba ke rakho aur \"Paste\" chuno":"Long-press in the box and choose \"Paste\"","Model apne aap {s} par badal diya":"Model changed to {s} automatically","Profile ke sawaal":"Profile questions","Namaste! Chaliye aapki profile banate hain":"Hello! Let's make your profile","{n} chhote sawaal, lagbhag {n} minute. Yeh sirf ek baar poochenge — isi se aapka calorie target, diet plan aur roz ki tips banengi.":"{n} short questions, about {n} minutes. Asked only once — your calorie target, diet plan and daily tips come from this.","Shuru karo":"Start","Pichla sawaal":"Previous question","Sawaal {n} / {n}":"Question {n} / {n}","Aapki profile":"Your profile","Aage":"Next","Aapka naam kya hai?":"What is your name?","Jaise: Ramesh":"e.g. Ramesh","Naam likho":"Enter your name","Aap…":"You are…","👨 Purush":"👨 Male","👩 Mahila":"👩 Female","Aapki umar kitni hai?":"How old are you?","saal":"years","Aapki height kitni hai?":"How tall are you?","{n} feet":"{n} feet","{n} inch":"{n} inch","Feet":"Feet","Inch":"Inch","cm":"cm","cm mein daalna hai?":"Enter in cm?","Feet-inch mein daalna hai?":"Enter in feet-inch?","Height sahi daalo":"Enter correct height","Abhi aapka wazan kitna hai?":"What is your weight now?","Subah khaali pet ka wazan sabse sahi hota hai.":"Morning empty-stomach weight is the most accurate.","kg":"kg","{n} se {n} {s} ke beech likho":"Enter between {n} and {n} {s}","Aapka goal kya hai?":"What is your goal?","⬇️ Wazan kam karna":"⬇️ Lose weight","⚖️ Wazan same rakhna":"⚖️ Keep weight","⬆️ Wazan badhana":"⬆️ Gain weight","Kitne wazan tak pahunchna hai?":"What weight do you want to reach?","Aapki height ke hisaab se":"For your height","healthy wazan: {n}–{n} kg":"healthy weight: {n}–{n} kg",". Abhi aap":". You are now","{n} kg":"{n} kg","ho.":".","ho. Pehle chhota target rakho (jaise {n} kg) — pahunch ke aage badhao.":". Start with a smaller target (e.g. {n} kg) — then go further.","Target wazan kg mein likho":"Enter target weight in kg","Wazan kam karna hai to target abhi ke wazan se kam hona chahiye":"To lose weight the target must be below your current weight","Target {s} kg se kam rakhna sehat ke liye theek nahi":"A target below {s} kg is not healthy","Wazan badhana hai to target abhi se zyada hona chahiye":"To gain weight the target must be above your current weight","Kitni tezi se wazan kam karna hai?":"How fast do you want to lose weight?","Dheere kam hua wazan zyada tikta hai.":"Weight lost slowly stays off longer.","🐢 Aaram se — ¼ kg / hafta":"🐢 Slow — ¼ kg / week","🚶 Normal — ½ kg / hafta (sabse sahi)":"🚶 Normal — ½ kg / week (best)","🏃 Tez — ¾ kg / hafta":"🏃 Fast — ¾ kg / week","Aap kya khate ho?":"What do you eat?","🥦 Shakahari":"🥦 Vegetarian","🙏 Jain":"🙏 Jain","🥚 Veg + anda":"🥚 Veg + egg","🍗 Non-veg":"🍗 Non-veg","Aapka roz ka kaam kaisa hai?":"How active is your day?","🪑 Zyada baithe rehte ho (dukaan, office)":"🪑 Mostly sitting (shop, office)","🚶 Thoda chalna-phirna / halki walk":"🚶 Some walking / light walk","🏋️ Roz exercise / khade rehkar kaam":"🏋️ Daily exercise / standing work","💪 Bahut mehnat wala kaam":"💪 Hard physical work","Roz kitne ghante sote ho?":"How many hours do you sleep?","😴 {n} ghante se kam":"😴 Less than {n} hours","{n}–{n} ghante":"{n}–{n} hours","{n} ghante se zyada":"More than {n} hours","Inme se kaunsi aadatein aapmein hain?":"Which of these habits do you have?","Sach batao — isi se plan aur roz ki tips banengi. Jitni hain sab chuno.":"Be honest — your plan and daily tips depend on it. Choose all that apply.","Koi nahi":"None","Meetha / mithai zyada":"Too many sweets","Tala hua / namkeen":"Fried food / namkeen","Baar-baar snacks":"Frequent snacking","Cold drink / packet juice":"Cold drinks / packet juice","Cheeni wali chai {n}+ cup":"Sugary tea {n}+ cups","Bahar ka khana / fast food":"Outside food / fast food","Paani kam peena":"Drinking too little water","Nashta skip karna":"Skipping breakfast","Tension / bore hone par khana":"Eating when stressed / bored","Ek baar mein zyada khana":"Big portions","TV / mobile dekhte hue khana":"Eating while watching TV / phone","Aur kaunsi achhi aadatein hain?":"Which good habits do you have?","Roz walk / exercise":"Daily walk / exercise","Roz salad / sabzi":"Salad / veg daily","Roz fal":"Fruit daily","Paani achha peete ho":"Drink enough water","Zyada ghar ka khana":"Mostly home food","Neend poori":"Enough sleep","Upvas / niyam se khana":"Fasting / disciplined eating","Koi health problem hai?":"Any health problem?","Jitni hain sab chuno. Na ho to \"Koi nahi\" dabao.":"Choose all that apply. If none, tap \"None\".","Koi dawai (medicine) chal rahi hai?":"Are you taking any medicine?","Isse diet plan dawai ke time ke hisaab se banega. Dawai kabhi apne aap band mat karna.":"The diet plan will follow your medicine timing. Never stop medicines on your own.","❌ Nahi, koi dawai nahi":"❌ No medicines","💊 Haan, dawai chal rahi hai":"💊 Yes, I take medicines","Dawai ka naam, kitni aur kab (har dawai nayi line mein)":"Medicine name, dose and when (one per line)","Dawai ka naam likho, ya \"Nahi\" chuno":"Write the medicine name, or choose \"No\"","Kisi khane se allergy hai, ya koi cheez suit nahi karti?":"Any food allergy, or food that doesn't suit you?","Na ho to khaali chhod ke Aage dabao.":"If none, leave empty and tap Next.","Jaise: moongfali, doodh, baingan":"e.g. peanuts, milk, brinjal","Koi aur bimari, operation ya taklif?":"Any other illness, operation or problem?","Jo upar ki list mein nahi thi. Na ho to khaali chhodo.":"Not in the list above. If none, leave empty.","Ek option chuno":"Choose an option","{s} ki profile ✅":"{s}'s profile ✅","Aap ki profile ✅":"Your profile ✅","BMI":"BMI","Healthy wazan":"Healthy weight","Aapka roz ka target":"Your daily target","Target wazan":"Target weight","Kab tak":"By when","~{n} hafte ({s} {n})":"~{n} weeks ({s} {n})","{n} g roz":"{n} g a day","{n} L roz":"{n} L a day","Sudharni hain:":"To improve:","Achhi aadatein:":"Good habits:","🩺 Sehat:":"🩺 Health:","Problem: {s}":"Problems: {s}","💊 Dawai: {s}":"💊 Medicines: {s}","Koi dawai nahi":"No medicines","⚠️ Allergy: {s}":"⚠️ Allergy: {s}","Aur: {s}":"Other: {s}","Dawai apne aap band ya kam mat karna — app sirf khane ki salah deta hai.":"Never stop or reduce medicines yourself — the app only gives food advice.","✅ Sab sahi hai — shuru karo":"✅ All correct — start","Profile ban gayi! Aapka target: {n} kcal roz":"Profile ready! Your target: {n} kcal a day","Profile update ho gayi":"Profile updated","Pehle apni profile bharo":"Fill your profile first","Umar, height aur wazan se aapka sahi calorie target banega. Abhi {n} kcal maan ke chal rahe hain.":"Your age, height and weight give your correct calorie target. Using {n} kcal for now.","Profile bharo ({n} minute)":"Fill profile ({n} minutes)","📝 Aaj ka din kaise gaya?":"📝 How was your day?","Din ke aakhir mein {n} second — kya achha kiya, kya galti hui.":"{n} seconds at day's end — what went well, what went wrong.","Aaj ka hisaab likho":"Write today's review","Badlo":"Edit","📝 Aaj ka din — {s}":"📝 Today — {s}","📝 Aaj ka din":"📝 Today","📝 Us din ka din — {s}":"📝 That day — {s}","😊 Achha":"😊 Good","😐 Theek-thaak":"😐 Okay","😞 Kharab":"😞 Bad","App ne khud dekha:":"The app noticed:","✓ Aaj achha kya kiya?":"✓ What went well today?","✗ Aaj kya galti hui?":"✗ What went wrong today?","Walk / exercise ki":"Walked / exercised","Ghar ka khana khaya":"Ate home food","Meetha nahi khaya":"No sweets","Salad / fal khaya":"Ate salad / fruit","Jaldi soya":"Slept early","Meetha khaya":"Ate sweets","Tala hua / namkeen khaya":"Ate fried food / namkeen","Bahar ka khana":"Outside food","Raat ko der se khaya":"Ate late at night","Zyada kha liya":"Overate","Walk nahi ki":"No walk","Cold drink / juice piya":"Had cold drink / juice","Tension mein khaya":"Ate when stressed","Kuch aur likhna hai? (optional)":"Anything else? (optional)","Jaise: shaadi mein gaya tha":"e.g. went to a wedding","Save karo":"Save","Kal ke liye: {s}":"For tomorrow: {s}","Shabash! Aise hi chalte raho 💪":"Well done! Keep going 💪","Calorie target ke andar ({n} / {n})":"Calories within target ({n} / {n})","Target se {n} kcal zyada khaya":"Ate {n} kcal over target","Protein poora":"Protein met","Protein kam ({n} / {n} g)":"Protein low ({n} / {n} g)","Namak zyada ({n} mg)":"Too much salt ({n} mg)","Paani poora piya":"Water goal met","Paani kam ({n} / {n} L)":"Too little water ({n} / {n} L)","✓ {s}":"✓ {s}","✗ {s}":"✗ {s}","💡 {s}":"💡 {s}","• {s}":"• {s}","Meethe ki talab ho to {n} khajoor ya thoda fal lo, mithai nahi.":"When you crave sweets, have {n} date or some fruit, not mithai.","Tala hua hafte mein {n} baar tak. Namkeen ki jagah bhuna chana ya makhana.":"Fried food at most {n} time a week. Roasted chana or makhana instead of namkeen.","Raat ka khana sone se {n}–{n} ghante pehle khatam karo.":"Finish dinner {n}–{n} hours before sleep.","Snack ka time fix karo — shaam {n} baje, sirf {n} katori.":"Fix a snack time — {n} pm, only {n} bowl.","Cold drink ki jagah chaas ya nimbu paani (kam cheeni).":"Buttermilk or lemon water (less sugar) instead of cold drinks.","Chai mein cheeni aadhi karo, phir dheere-dheere band.":"Halve the sugar in tea, then slowly stop.","Bahar khana pade to roti-dal-sabzi chuno, tala hua nahi.":"If eating out, choose roti-dal-sabzi, not fried food.","Har ghante {n} glass paani — phone mein alarm laga lo.":"{n} glass of water every hour — set a phone alarm.","Nashta skip mat karo — isse baad mein zyada bhookh lagti hai.":"Don't skip breakfast — you get hungrier later.","Tension mein khane se pehle {n} min walk ya {n} glass paani.":"When stressed, walk {n} min or drink {n} glass of water before eating.","Choti plate lo, pehle salad khao, phir roti.":"Use a small plate, eat salad first, then roti.","TV / mobile band karke khao — dhyan se khaane par kam khaate hain.":"Eat with TV / phone off — mindful eating means eating less.","← Wapas":"← Back","Aage →":"Next →","✅ Samajh gaya, shuru karo":"✅ Got it, let's start","📊 Aaj ka din kaisa gaya":"📊 How today went","📊 Abhi tak ka hisaab":"📊 Report so far","📊 Us din kaisa gaya":"📊 How that day went","😊 Achha din":"😊 Good day","😐 Theek-thaak din":"😐 Okay day","😞 Sudhaar chahiye":"😞 Needs improvement","Aaj ka khana jodo — raat ko app batayega din kaisa gaya, kya galti hui aur kal kya na karein.":"Add today's food — at night the app tells how your day went, what went wrong and what to avoid tomorrow.","Us din ka koi data nahi.":"No data for that day.","→ Kal: {s}":"→ Tomorrow: {s}","Kal ke liye sabse zaroori: {s}":"Most important for tomorrow: {s}","Poora hisaab shaam {n} baje ke baad — abhi tak ka dikh raha hai.":"Full report after {n} pm — showing so far.","✏️ Mood / kuch aur jodo":"✏️ Add mood / more","Bahut kam khaya ({n} / {n} kcal)":"Ate too little ({n} / {n} kcal)","Tel-ghee zyada ({n} / {n} g fat)":"Too much oil / ghee ({n} / {n} g fat)","Roti-chawal / meetha zyada ({n} / {n} g carbs)":"Too much roti-rice / sweets ({n} / {n} g carbs)","Fal / hari sabzi kam (vitamin C {n} / {n} mg)":"Too little fruit / green veg (vitamin C {n} / {n} mg)","Tala hua khaya: {s}":"Ate fried food: {s}","Meetha khaya: {s}":"Ate sweets: {s}","Cold drink / juice: {s}":"Cold drink / juice: {s}","Bahar ka / fast food: {s}":"Outside / fast food: {s}","Raat {s} baje khaya":"Ate at {s} at night","Nashta nahi kiya":"Skipped breakfast","Fal / sabzi achhe khaye":"Good fruit / veg","Namak limit mein":"Salt within limit","Tala-meetha nahi khaya":"No fried food or sweets","Hindi":"Hindi","English":"English","Jaise: Metformin {n} — subah-shaam khane ke baad Thyroxine {n} — subah khaali pet":"e.g. Metformin {n} — morning and evening after meals, Thyroxine {n} — morning on empty stomach","Khana jodo":"Add food","is haalat mein diet doctor / dietitian ki salah se hi badlein. Neeche ka chart sirf general jaankari hai.":"change your diet only with a doctor / dietitian's advice. The chart below is only general information.","Har meal mein {n} roti kam karo aur pehle salad khao.":"Cut {n} roti per meal and eat salad first.","Kam khana bhi theek nahi — teeno time poora khana lo.":"Eating too little isn't good either — have three full meals.","Har meal mein dal, paneer, dahi ya sprouts jodo.":"Add dal, paneer, curd or sprouts to every meal.","Tadka kam, tala hua band.":"Less tadka, no fried food.","Chawal aadha, roti {n} kam, meetha nahi.":"Half the rice, {n} roti less, no sweets.","Achaar, papad, namkeen band; sabzi-dal mein upar se namak nahi.":"No pickles, papad, namkeen; no extra salt on food.","{n} fal zaroor — amrood, santra ya papita.":"Have {n} fruit — guava, orange or papaya.","{n}–{n} min walk zaroor — khane ke baad {n} min bhi chalega.":"Walk {n}–{n} min — even {n} min after meals helps.","🚶 Aaj ki walk":"🚶 Today's walk","Goal: {n}":"Goal: {n}","steps":"steps","{n} km • 🔥 {n} kcal burn":"{n} km • 🔥 {n} kcal burned","{n} km • 🔥 {n} kcal burn • ⏱ {n} min":"{n} km • 🔥 {n} kcal burned • ⏱ {n} min","🚶 Walk shuru karo":"🚶 Start walk","✏️ Steps likho":"✏️ Enter steps","Walk ke time app khula rakho (screen on). Phone ke Health / Fit app mein steps dikhte hain to \"Steps likho\" se daal do.":"Keep the app open during the walk (screen on). If your phone's Health / Fit app shows steps, add them with \"Enter steps\".","Walk chal rahi hai… chalte raho 🚶":"Walk in progress… keep going 🚶","Sensor se data nahi aa raha — \"Steps likho\" use karo":"No sensor data — use \"Enter steps\"","kcal burn":"kcal burned","time":"time","km":"km","Phone jeb mein rakh ke chalo. Screen on rahegi — band hui to ginti ruk jayegi.":"Keep the phone in your pocket and walk. The screen stays on — if it turns off, counting stops.","⏹ Walk band karo (2 second daba ke rakho)":"⏹ Stop walk (hold for 2 seconds)","Daba ke rakho…":"Keep holding…","Walk khatam: {n} steps, ~{n} kcal burn 👏":"Walk done: {n} steps, ~{n} kcal burned 👏","Is phone mein motion sensor nahi mila — \"Steps likho\" use karo":"No motion sensor on this phone — use \"Enter steps\"","Motion sensor ki permission chahiye":"Motion sensor permission is needed","Aaj ke kul steps kitne hue? (phone ke Health / Fit app se dekh ke)":"Total steps today? (check your phone's Health / Fit app)","{n} se {n} ke beech likho":"Enter between {n} and {n}","Steps save ho gaye":"Steps saved","Roz ka steps goal kitna rakhein?":"Daily steps goal?","Steps goal set ho gaya":"Steps goal set","Aaj {n} kcal aur kha sakte ho (walk se +{n})":"You can eat {n} kcal more today (+{n} from walking)","Walk poori ({n} steps)":"Walk goal met ({n} steps)","Walk kam ({n} steps)":"Too little walking ({n} steps)","Walk":"Walk","{n}k":"{n}k"};
+const NUMRE = /\d+(?:[.,]\d+)?/g;
+const DAYRE = /^(Raviwar|Somwar|Mangalwar|Budhwar|Guruwar|Shukrawar|Shaniwar|Shukra|Mangal|Ravi|Budh|Guru|Shani|Som)\b(.*)$/;
+const DAYEN = {Raviwar: 'Sunday', Somwar: 'Monday', Mangalwar: 'Tuesday', Budhwar: 'Wednesday', Guruwar: 'Thursday', Shukrawar: 'Friday', Shaniwar: 'Saturday', Ravi: 'Sun', Som: 'Mon', Mangal: 'Tue', Budh: 'Wed', Guru: 'Thu', Shukra: 'Fri', Shani: 'Sat'};
+let EN_PAT = null;
+function buildPat() {
+  const esc2 = x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const keys = Object.keys(EN).filter(k => k.includes('{s}'));
+  const generic = keys.filter(k => /^(✓|✗|💡|•) \{s\}$/.test(k) || k === '{n} — {s}');
+  EN_PAT = [...keys.filter(k => !generic.includes(k)), ...generic].map(k => ({
+    re: new RegExp('^' + k.split(/(\{[ns]\})/).map(x => x === '{s}' ? '(.+?)' : x === '{n}' ? '(\\d+(?:[.,]\\d+)?)' : esc2(x)).join('') + '$'), out: EN[k]}));
+}
+function trCore(core) {
+  const nums = [], key = core.replace(NUMRE, x => { nums.push(x); return '{n}'; });
+  const hit = EN[key];
+  if (hit != null) { let i = 0; return hit.replace(/\{n\}/g, () => nums[i++] ?? ''); }
+  const d = core.match(DAYRE); if (d) return DAYEN[d[1]] + d[2];
+  if (!EN_PAT) buildPat();
+  for (const p of EN_PAT) {
+    const m = core.match(p.re);
+    if (m) { let i = 1; return p.out.replace(/\{[ns]\}/g, tk => { const v = m[i++] || ''; return tk === '{s}' ? (trCore(v) ?? v) : v; }); }
+  }
+  return null;
+}
+function tr(src) {
+  if (LANG !== 'en' || !src || !/[A-Za-z]/.test(src)) return src;
+  const m = String(src).match(/^(\s*)([\s\S]*?)(\s*)$/), core = m[2].replace(/\s+/g, ' ');
+  const r = trCore(core); return r == null ? src : m[1] + r + m[3];
+}
+const trLine = l => { if (LANG !== 'en') return l; const m = l.match(/^([*_•\s]*)(.*?)([*_]*)$/); const r = m[2] ? trCore(m[2]) : null; return r == null ? l : m[1] + r + m[3]; };
+const ORIG = new WeakMap(), AORIG = new WeakMap(), TATTR = ['placeholder', 'aria-label', 'title'];
+function trAttr(e, a) {
+  const v = e.getAttribute(a); if (v == null) return;
+  const m = AORIG.get(e) || {}; let o = m[a];
+  if (!o || (v !== o.src && v !== o.out)) o = m[a] = {src: v, out: null};
+  const want = LANG === 'en' ? tr(o.src) : o.src;
+  if (v !== want) { o.out = want; e.setAttribute(a, want); }
+  AORIG.set(e, m);
+}
+function trNode(n) {
+  if (n.nodeType === 3) {
+    const p = n.parentElement; if (!p || p.closest('script,style,textarea,[data-notr]')) return;
+    let o = ORIG.get(n); const cur = n.nodeValue;
+    if (!o || (cur !== o.src && cur !== o.out)) { o = {src: cur, out: null}; ORIG.set(n, o); }
+    const want = LANG === 'en' ? tr(o.src) : o.src;
+    if (cur !== want) { o.out = want; n.nodeValue = want; }
+  } else if (n.nodeType === 1) {
+    if (n.closest('script,style,textarea,[data-notr]')) return;
+    TATTR.forEach(a => trAttr(n, a));
+    n.querySelectorAll('[placeholder],[aria-label],[title]').forEach(e => TATTR.forEach(a => trAttr(e, a)));
+    const w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT); let t; while ((t = w.nextNode())) trNode(t);
+  }
+}
+const MO = new MutationObserver(ms => {
+  MO.disconnect();
+  ms.forEach(m => { if (m.type === 'characterData') trNode(m.target); else if (m.type === 'attributes') { if (!m.target.closest('[data-notr]')) trAttr(m.target, m.attributeName); } else m.addedNodes.forEach(trNode); });
+  moOn();
+});
+const moOn = () => MO.observe(document.body, {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: TATTR});
+function setLang(l) {
+  LANG = l === 'en' ? 'en' : 'hi'; LS.set('cd_lang', LANG);
+  document.documentElement.lang = LANG === 'en' ? 'en' : 'hi';
+  $('#bLang').textContent = LANG === 'en' ? 'हिं' : 'EN';
+  const sel = document.querySelector('#lSel'); if (sel) sel.value = LANG;
+  MO.disconnect(); trNode(document.body); moOn();
+  if (!$('#tour').hidden) drawTour();
+  if (!$('#welcome').hidden) drawWelcome();
+  if (!$('#quiz').hidden) drawQuiz();
+}
+const _confirm = window.confirm.bind(window), _prompt = window.prompt.bind(window);
+window.confirm = m => _confirm(tr(String(m)));
+window.prompt = (m, d) => _prompt(tr(String(m)), d);
+const aiLang = () => LANG === 'en' ? '\nLANGUAGE: write ALL names, text, reasons, tips and notes in simple English (ignore any "Hinglish" instruction above).' : '';
+
+/* ---------- App ki din ki report (data dekh ke) ---------- */
+const JUNK = [[/samosa|kachori|pakod|bhaji|vada|puri\b|bhature|french ?fr|chips|namkeen|mixture|farsan|fried|tala/i, 'fried', 'Tala hua khaya: '],
+  [/jalebi|gulab jamun|rasgulla|mithai|ladoo|laddoo|barfi|halwa|kheer|ice ?cream|cake|pastry|chocolate|biscuit|cookie|chikki|sweet|meetha/i, 'sweet', 'Meetha khaya: '],
+  [/cold drink|coke|pepsi|soda|juice|cola|sprite|thums|energy drink/i, 'cold', 'Cold drink / juice: '],
+  [/pizza|burger|maggi|noodle|chowmein|momo|pav bhaji|pasta|fast food/i, 'outside', 'Bahar ka / fast food: ']];
+const REPORT_HOUR = 20;
+function analyzeDay(k) {
+  const list = dayEntries(k), t = sum(list), c = calc(), n = needs(), today = k === dayKey(Date.now()), hr = new Date().getHours();
+  const late = !today || hr >= REPORT_HOUR, ci = checks[k] || {}, good = [], bad = [];
+  if (!list.length && !ci.at) return null;
+  const B = (text, tip, w) => bad.push({text, tip, w: w || 1.5});
+  if (list.length) {
+    const tg = c.target + walkBonus(k);
+    if (t.cal > tg * 1.05) B(`Target se ${Math.round(t.cal - tg)} kcal zyada khaya`, 'Har meal mein 1 roti kam karo aur pehle salad khao.', 2);
+    else if (late && t.cal < c.target * .7) B(`Bahut kam khaya (${Math.round(t.cal)} / ${c.target} kcal)`, 'Kam khana bhi theek nahi — teeno time poora khana lo.');
+    else if (late || t.cal <= c.target) good.push(`Calorie target ke andar (${Math.round(t.cal)} / ${c.target})`);
+    if (!hasProb('kidney')) { if (t.p >= n.p * .9) good.push('Protein poora'); else if (late && t.p < n.p * .7) B(`Protein kam (${Math.round(t.p)} / ${n.p} g)`, 'Har meal mein dal, paneer, dahi ya sprouts jodo.'); }
+    if (t.f > n.f * 1.15) B(`Tel-ghee zyada (${Math.round(t.f)} / ${n.f} g fat)`, 'Tadka kam, tala hua band.');
+    if (t.c > n.c * 1.15) B(`Roti-chawal / meetha zyada (${Math.round(t.c)} / ${n.c} g carbs)`, 'Chawal aadha, roti 1 kam, meetha nahi.');
+    if (t.na > n.na) B(`Namak zyada (${Math.round(t.na)} mg)`, 'Achaar, papad, namkeen band; sabzi-dal mein upar se namak nahi.'); else if (late && t.na > 0) good.push('Namak limit mein');
+    if (late && t.vc < n.vc * .5) B(`Fal / hari sabzi kam (vitamin C ${Math.round(t.vc)} / ${n.vc} mg)`, '1 fal zaroor — amrood, santra ya papita.', 1); else if (t.vc >= n.vc * .9) good.push('Fal / sabzi achhe khaye');
+    const seen = {};
+    list.forEach(e => JUNK.forEach(([re, id, pre]) => { if (re.test(e.name || '')) (seen[id] = seen[id] || {pre, names: []}).names.push(e.name); }));
+    Object.entries(seen).forEach(([id, v]) => B(v.pre + [...new Set(v.names)].join(', '), HABIT_TIPS[id], 1.5));
+    if (!Object.keys(seen).length && late) good.push('Tala-meetha nahi khaya');
+    const lateE = list.filter(e => new Date(e.ts).getHours() >= 21);
+    if (lateE.length) B(`Raat ${fmtTime(lateE[lateE.length - 1].ts)} baje khaya`, HABIT_TIPS.late, 1);
+    if (late && !list.some(e => new Date(e.ts).getHours() < 11)) B('Nashta nahi kiya', HABIT_TIPS.skip, 1);
+  }
+  const sn = dayStep(k).n;
+  if (sn >= stepGoal()) good.push(`Walk poori (${sn} steps)`); else if (late && stepsUsed() && sn < 3000) B(`Walk kam (${sn} steps)`, HABIT_TIPS.nowalk, 1);
+  const w = (water.log[k] || 0) * GLASS, wg = waterGoal();
+  if (w >= wg) good.push('Paani poora piya'); else if (late && w < wg * .6) B(`Paani kam (${(w / 1000).toFixed(1)} / ${(wg / 1000).toFixed(1)} L)`, HABIT_TIPS.water, 1);
+  (ci.good || []).forEach(x => good.includes(x) || good.push(x));
+  (ci.bad || []).forEach(id => { const l = hLabel(CI_BAD, id); if (!bad.some(b => b.text === l)) B(l, HABIT_TIPS[id] || '', 1); });
+  const score = Math.max(1, Math.min(10, Math.round(10 - bad.reduce((a, b) => a + b.w, 0))));
+  const verdict = score >= 8 ? '😊 Achha din' : score >= 5 ? '😐 Theek-thaak din' : '😞 Sudhaar chahiye';
+  return {good, bad, score, verdict, partial: today && hr < REPORT_HOUR};
+}
+function reportHTML(k, editable) {
+  const r = analyzeDay(k), today = k === dayKey(Date.now());
+  if (!r) return `<div class="wcard"><div class="wh"><b>${today ? '📊 Aaj ka din kaisa gaya' : '📊 Us din kaisa gaya'}</b></div><p class="small muted" style="margin:0">${today ? 'Aaj ka khana jodo — raat ko app batayega din kaisa gaya, kya galti hui aur kal kya na karein.' : 'Us din ka koi data nahi.'}</p></div>`;
+  const col = r.score >= 8 ? 'var(--leaf)' : r.score >= 5 ? 'var(--haldi)' : 'var(--chili)', ci = checks[k];
+  const mood = ci && ci.mood ? (MOODS.find(m => m[0] === ci.mood) || ['', ''])[1] : '';
+  const top = r.bad.slice().sort((a, b) => b.w - a.w)[0];
+  return `<div class="wcard"><div class="wh"><b>${today ? (r.partial ? '📊 Abhi tak ka hisaab' : '📊 Aaj ka din kaisa gaya') : '📊 Us din kaisa gaya'}</b>${mood ? `<span>${mood}</span>` : ''}</div>
+    <div class="rscore"><span class="sc" style="color:${col}">${r.score}/10</span><span class="sv" style="color:${col}">${r.verdict}</span></div>
+    ${r.partial ? `<p class="small muted" style="margin:0 0 6px">Poora hisaab shaam ${REPORT_HOUR - 12} baje ke baad — abhi tak ka dikh raha hai.</p>` : ''}
+    ${r.good.map(x => `<div class="ci-line ci-good">✓ ${esc(x)}</div>`).join('')}
+    ${r.bad.map(b => `<div class="ci-line ci-bad">✗ ${esc(b.text)}${b.tip ? `<div class="ci-tip">→ Kal: ${esc(b.tip)}</div>` : ''}</div>`).join('')}
+    ${top && top.tip && !r.partial ? `<p class="note" style="margin-top:8px">Kal ke liye sabse zaroori: ${esc(top.tip)}</p>` : ''}
+    ${ci && ci.note ? `<p class="small" style="margin:6px 0 0">📝 ${esc(ci.note)}</p>` : ''}
+    ${editable ? `<button class="btn full" data-ci="${k}" style="margin-top:10px">✏️ Mood / kuch aur jodo</button>` : ''}</div>`;
+}
 function checkHTML(k, editable) {
   const ci = checks[k];
   if (!ci) return editable ? `<div class="wcard"><div class="wh"><b>📝 Aaj ka din kaise gaya?</b></div><p class="small muted" style="margin:0 0 4px">Din ke aakhir mein 30 second — kya achha kiya, kya galti hui.</p><button class="btn primary full" data-ci="${k}">Aaj ka hisaab likho</button></div>` : '';
@@ -1419,7 +1734,7 @@ function drawCheck() {
   const d = ciDraft, a = autoLines(d.k);
   openSheet(`<h3>📝 ${d.k === dayKey(Date.now()) ? 'Aaj' : fmtDay(d.k)} ka din kaise gaya?</h3>
     <div class="qchips">${MOODS.map(([id, l]) => `<button class="qchip${d.mood === id ? ' on' : ''}" data-cm="${id}">${l}</button>`).join('')}</div>
-    ${a.g.length || a.b.length ? `<b class="small">App ne khud dekha:</b>${a.g.map(x => `<div class="ci-line ci-good">✓ ${esc(x)}</div>`).join('')}${a.b.map(x => `<div class="ci-line ci-bad">✗ ${esc(x)}</div>`).join('')}` : ''}
+
     <b style="display:block;margin-top:12px">✓ Aaj achha kya kiya?</b>
     <div class="qchips" style="margin-top:6px">${CI_GOOD.map(x => `<button class="qchip${d.good.includes(x) ? ' on' : ''}" data-cg="${esc(x)}">${x}</button>`).join('')}</div>
     <b style="display:block;color:var(--chili)">✗ Aaj kya galti hui?</b>
@@ -1477,7 +1792,7 @@ function drawQuiz() {
   let body = '';
   const top = st.k === 'intro' ? '' : `<div class="qtop"><button class="qb" data-qback="1" aria-label="Pichla sawaal">←</button><span class="qn">${st.k === 'summary' ? 'Aapki profile' : `Sawaal ${num} / ${total}`}</span>${quizMode !== 'start' ? '<button class="qb" data-qclose="1" aria-label="Band karo">×</button>' : ''}</div>
     <div class="qprog"><i style="width:${st.k === 'summary' ? 100 : num / total * 100}%"></i></div>`;
-  if (st.k === 'intro') body = `<div style="text-align:center;padding-top:30px"><div style="font-size:3.2rem">🙏</div><h2 style="margin:10px 0">Namaste! Chaliye aapki profile banate hain</h2>
+  if (st.k === 'intro') body = `<div style="text-align:center;padding-top:18px"><div class="qchips" style="justify-content:center"><button class="qchip${LANG === 'hi' ? ' on' : ''}" data-lang="hi">Hindi</button><button class="qchip${LANG === 'en' ? ' on' : ''}" data-lang="en">English</button></div><div style="font-size:3.2rem">🙏</div><h2 style="margin:10px 0">Namaste! Chaliye aapki profile banate hain</h2>
     <p class="lead">${total} chhote sawaal, lagbhag 2 minute. Yeh sirf ek baar poochenge — isi se aapka calorie target, diet plan aur roz ki tips banengi.</p>
     <button class="btn primary full" data-qnext="1" style="font-size:1.15rem;padding:15px">Shuru karo</button></div>`;
   else if (st.type === 'text') body = `<p class="qq">${st.q}</p><input class="qinp" id="qv" value="${esc(qa[st.k])}" placeholder="${st.ph || ''}" autocomplete="off"><button class="btn primary full" data-qnext="1">Aage</button>`;
@@ -1630,7 +1945,7 @@ function planText() {
   if (avoid.length) { L.push(''); L.push('*✗ Kam / na khayein*'); avoid.forEach(x => L.push('• ' + x)); }
   L.push(''); L.push('_Yeh general diet jaankari hai. Bimari ho to doctor / dietitian ki salah zaroor lein._');
   L.push('— Calorie Diagnosis, Ankush New Vision');
-  return L.join('\n');
+  return L.map(trLine).join('\n');
 }
 async function sharePlan() {
   renderDiet();
@@ -1650,7 +1965,7 @@ function drawAiChart() {
         return `<li><span>${esc(x[0])} <small>${esc(x[1])}${!isStaple(n) && k ? `, mahine mein ${k}/${DISH_LIMIT} baar` : ''}</small></span><b>${x[2]}</b></li>`; }).join('')}</ul></div>`; }).join('') +
     `<p class="ptot">Kul lagbhag ${tot} kcal</p>` +
     (aiChart.totals && aiChart.totals.cal ? `<h3 style="margin:14px 0 6px">Plan ka poshan — zaroorat vs plan</h3>${nutHTML(aiChart.totals, [])}` +
-      (aiChart.gaps && aiChart.gaps.length && aiChart.gaps[0] !== 'totals missing' ? `<p class="small" style="color:var(--chili)">Is plan mein poori tarah cover nahi hua: ${esc(aiChart.gaps.map(g => g.replace(' LOW', ' kam').replace(' HIGH', ' zyada')).join(', '))}. Upar ki salah ke hisaab se thoda jodo / ghatao.</p>` : '') : '') +
+      (aiChart.gaps && aiChart.gaps.length && aiChart.gaps[0] !== 'totals missing' ? `<p class="small" style="color:var(--chili)">Is plan mein poori tarah cover nahi hua: ${esc(aiChart.gaps.map(g => g.replace(' LOW', LANG === 'en' ? ' low' : ' kam').replace(' HIGH', LANG === 'en' ? ' high' : ' zyada')).join(', '))}. Upar ki salah ke hisaab se thoda jodo / ghatao.</p>` : '') : '') +
     (aiChart.avoid && aiChart.avoid.length ? `<div class="card"><h3>Kam / na khayein</h3><ul class="tips">${aiChart.avoid.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : '') +
     (aiChart.tips && aiChart.tips.length ? `<div class="card"><h3>Tips</h3><ul class="tips">${aiChart.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : '') +
     `<p class="muted small">Pichhle 30 din mein ${recentHist().length} AI plan bane. ${full.length ? full.length + ' dish apni 3 baar ki limit par hain — woh agle plans mein nahi aayengi.' : 'Koi dish abhi 3 baar ki limit par nahi.'}</p>`;
@@ -1674,7 +1989,8 @@ COVER ALL NUTRIENTS for the full day: reach at least 90% of protein ${n.p} g, ma
 Give realistic "totals" for the whole day.
 ${profile.targetWeight ? 'Target weight: ' + profile.targetWeight + ' kg. ' : ''}${habitsTxt()}${healthTxt()}Plan and tips should help fix the bad habits (e.g. early light dinner if late eating, sweet swap if sweets).
 Random seed for variety: ${Date.now() % 100000}.`;
-  const tail = `Reply with ONLY valid JSON: {"meals":[{"time":"7:30 AM","title":"Nashta","items":[{"food":"Moong dal chilla","qty":"2 pc","cal":220}]}],"totals":{"calories":0,"protein_g":0,"carbs_g":0,"fat_g":0,"sodium_mg":0,"magnesium_mg":0,"potassium_mg":0,"zinc_mg":0,"vitamin_d_mcg":0,"vitamin_c_mg":0},"avoid":["foods to limit for these problems, short Hinglish"],"tips":["3 to 5 short practical Hinglish tips"]}`;
+  const tail = aiLang() + `
+Reply with ONLY valid JSON: {"meals":[{"time":"7:30 AM","title":"Nashta","items":[{"food":"Moong dal chilla","qty":"2 pc","cal":220}]}],"totals":{"calories":0,"protein_g":0,"carbs_g":0,"fat_g":0,"sodium_mg":0,"magnesium_mg":0,"potassium_mg":0,"zinc_mg":0,"vitamin_d_mcg":0,"vitamin_c_mg":0},"avoid":["foods to limit for these problems, short Hinglish"],"tips":["3 to 5 short practical Hinglish tips"]}`;
   btn.disabled = true; btn.textContent = 'Naya plan ban raha hai…';
   try {
     let j, md, bad = [], tot = {}, gaps = [], fix = '';
@@ -1884,6 +2200,24 @@ $('#bMan').onclick = () => { pending = newPending('manual'); drawSearch(); };
 $('#bAsk').onclick = openAsk;
 $('#bQuiz').onclick = () => openQuiz('edit');
 $('#bHelp').onclick = openTour;
+$('#wlGo').onclick = closeWelcome;
+$('#wlLang').onclick = () => { setLang(LANG === 'en' ? 'hi' : 'en'); renderAll(); drawWelcome(); };
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-walk]')) startWalk();
+  if (e.target.closest('[data-sedit]')) editSteps();
+  if (e.target.closest('[data-sgoal]')) editStepGoal();
+});
+(() => {                                                   // band karne ke liye 2 second dabana (jeb mein galti se na ruke)
+  let t = null; const b = $('#wkStop');
+  const down = e => { e.preventDefault(); b.textContent = 'Daba ke rakho…'; t = setTimeout(stopWalk, 1800); };
+  const up = () => { clearTimeout(t); if (wk) b.textContent = '⏹ Walk band karo (2 second daba ke rakho)'; };
+  b.addEventListener('pointerdown', down); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, up));
+  b.addEventListener('contextmenu', e => e.preventDefault());
+})();
+document.addEventListener('visibilitychange', () => { if (wk && document.visibilityState === 'visible') wkDraw(); });
+$('#bLang').onclick = () => { setLang(LANG === 'en' ? 'hi' : 'en'); renderAll(); };
+$('#lSel').onchange = e => { setLang(e.target.value); renderAll(); };
+document.addEventListener('click', e => { const b = e.target.closest('[data-lang]'); if (b) { setLang(b.dataset.lang); renderAll(); } });
 $('#bTour').onclick = openTour;
 document.addEventListener('click', e => {
   const j = e.target.closest('[data-jump]'); if (j) { const el = document.getElementById(j.dataset.jump); if (el) el.scrollIntoView({behavior: 'smooth', block: 'start'}); }
@@ -2018,11 +2352,11 @@ async function boot() {
   }
   await loadLocks();
   fillSettings(); renderToday();
-  if (!profile) openQuiz('start');
-  else if (!hasKey()) openOnb('start');
-  else maybeTour();
+  afterWelcome = () => { if (!profile) openQuiz('start'); else if (!hasKey()) openOnb('start'); else maybeTour(); };
+  drawWelcome(); document.body.style.overflow = 'hidden';
   dailyBackup();
 }
+setLang(LANG);
 boot();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

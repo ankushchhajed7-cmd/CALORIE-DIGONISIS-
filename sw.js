@@ -1,5 +1,5 @@
-/* Calorie Diagnosis — service worker v1.12 (network-first) */
-const CACHE = 'calorie-diagnosis-v1.12';
+/* Calorie Diagnosis — service worker v1.14 (network-first) */
+const CACHE = 'calorie-diagnosis-v1.14';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
