@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <!--
-  Calorie Diagnosis — v1.17
+  Calorie Diagnosis — v1.18
   Ankush New Vision
+  v1.18 (25-09-2026): APK mein walk ke time screen on (naye APK Factory ke ANVScreen se)
   v1.17 (25-09-2026): Back button + walk sensor sudhaar
    - Phone ka Back button: khula sheet / walk / guide / sawaal band hota hai, doosre tab se "Aaj" par aata hai (app band nahi hota)
    - Walk screen par upar "✕ Band karo" (poochh ke band)
@@ -584,7 +585,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
     <label class="field">🎨 Theme<select id="thSel"><option value="light">☀️ Light (hara)</option><option value="dark">🌙 Dark</option><option value="auto">📱 Phone jaisa (auto)</option></select></label>
     <label class="field">🌐 Bhasha / Language<select id="lSel"><option value="hi">हिंदी</option><option value="hig">Hinglish</option><option value="en">English</option></select></label>
     <button class="btn full" id="bTour">📖 App kaise chalayein (guide)</button>
-    <p class="ver">Calorie Diagnosis v1.17, Ankush New Vision</p>
+    <p class="ver">Calorie Diagnosis v1.18, Ankush New Vision</p>
   </section>
 </main>
 
@@ -662,7 +663,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 
 <script>
 'use strict';
-const VERSION = '1.17';
+const VERSION = '1.18';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad = n => String(n).padStart(2, '0');
@@ -1307,6 +1308,7 @@ async function startWalk() {
   wk = {start: Date.now(), n: 0, pend: 0, last: 0, avg: 0, sm: 0, buf: [], lvl: 0, up: false, got: false, lock: null, saved: 0};
   window.addEventListener('devicemotion', onMotion);
   try { if (navigator.wakeLock) wk.lock = await navigator.wakeLock.request('screen'); } catch (e) {}
+  try { if (window.ANVScreen) window.ANVScreen.keepOn(true); } catch (e) {}          // APK: screen on
   $('#walk').hidden = false; document.body.style.overflow = 'hidden';
   $('#wkStatus').textContent = 'Walk chal rahi hai… chalte raho 🚶';
   wkDraw(); wk.timer = setInterval(wkDraw, 1000);
@@ -1353,6 +1355,7 @@ function stopWalk() {
   if (!wk) return;
   window.removeEventListener('devicemotion', onMotion); clearInterval(wk.timer);
   try { if (wk.lock) wk.lock.release(); } catch (e) {}
+  try { if (window.ANVScreen) window.ANVScreen.keepOn(false); } catch (e) {}
   const n = wk.n, w = walkCalc(n); wk = null; saveSteps();
   $('#walk').hidden = true; document.body.style.overflow = '';
   renderAll(); toast(`Walk khatam: ${n} steps, ~${w.kcal} kcal burn 👏`);
