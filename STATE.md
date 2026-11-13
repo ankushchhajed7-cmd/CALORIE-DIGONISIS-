@@ -1,6 +1,6 @@
 # Calorie Diagnosis — STATE
 
-**Current version:** v1.28 (13-11-2026) · branch `feature-v1.28` (main par abhi v1.27)
+**Current version:** v1.28 (13-11-2026) · main par merged
 **Live link:** https://ankushchhajed7-cmd.github.io/CALORIE-DIGONISIS-/
 **Owner:** Ankush New Vision · APK: `apk-factory` repo (`.github/workflows/build-apk.yml`)
 
@@ -20,7 +20,7 @@ QR poster aur preview.png GitHub par nahi daalne.
 - Poore din ka AI plan: din mein 1 baar (raat 12 baje khulta). Ek dish 30 din mein max 3 baar.
 - **Aage ka plan (v1.27):** khaye hue ke baad baaki din. Offline plan hamesha; AI wala din mein 3 baar tak (`cd_restplan`), poore din wale lock se alag.
 - **v1.28:** "Aage" ka alag tab (neeche 5 tab): ek hi page par khana jodo + aaj ka khaya + baaki din ka chart. Diet tab se yeh section hata ke button rakha.
-- **🔄 Refresh** (header + welcome): SW update + purana cache saaf + reload. Data localStorage mein hai, safe rehta hai. Net band ho to reload nahi karta.
+- **Version + 🔄 Refresh** "Namaste, naam" ke bagal mein (welcome screen par hamesha; header mein version sirf 440px se bade phone par, chhote phone par jagah nahi): SW update + purana cache saaf + reload. Data localStorage mein hai, safe rehta hai. Net band ho to reload nahi karta.
 - Bachi calorie = target + walk bonus (jali calorie ka aadha) − khaya.
 - Bhasha: Hindi (देवनागरी) default, Hinglish, English. Har naya text EN + HI dictionary mein.
 - Data localStorage + IndexedDB; roz auto backup file; naye install par backup restore.
@@ -28,7 +28,7 @@ QR poster aur preview.png GitHub par nahi daalne.
 - Kidney problem ho to potassium/protein "kam hai" wali salah band.
 
 ## Version history
-- v1.28 (13-11-2026): "Khaya + Aage" ka alag page + Refresh button
+- v1.28 (13-11-2026): "Khaya + Aage" ka alag page + Refresh button + start screen par version (naam ke bagal mein)
 - v1.27 (13-11-2026): "Aage ka plan" — jo khaya uske baad baaki din ka plan
 - v1.26 (25-09-2026): Backup chunte waqt salah — "file na dikhe to ☰ menu → Downloads"; restore mein har tarah ki file chun sakte ho
 - v1.25 (25-09-2026): Settings mein APK jaanch — camera / step sensor / permission ki haalat saaf likhi

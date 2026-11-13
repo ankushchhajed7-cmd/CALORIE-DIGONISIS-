@@ -6,7 +6,8 @@
    - Neeche naya tab "⏩ Aage": ek hi page par — upar jo khaya woh jodo (list / apna item / photo), beech mein aaj ka khaya, neeche turant baaki din ka chart
    - Har item jodte / hatate hi plan apne aap naya; "Kab khaya" time aur "Kitna" (½ / 1 / 1½ / 2 / 3) wahin
    - Calorie bar: khaya + aage ka plan + bacha, target ke saath
-   - 🔄 Refresh button — upar header mein aur start (welcome) screen par: naya version laata hai, data safe rehta hai
+   - App ka version (v1.28) start / welcome screen par aur upar header mein naam ke bagal mein
+   - 🔄 Refresh button — "Namaste, naam" ke bilkul bagal mein (start / welcome screen aur upar header dono): naya version laata hai, data safe rehta hai
   v1.27 (13-11-2026): "Aage ka plan" — jo khaya uske baad baaki din ka plan
    - Abhi tak khaya (kcal + poshan), bachi calorie aur bacha protein / poshan dikhata hai
    - Offline plan: abhi ke time se baaki meal (jo abhi nahi khaya) bachi calorie mein, apne aap
@@ -179,10 +180,18 @@ button,input,select{font:inherit;color:inherit}
 .top .sub{margin:0;font-size:.82rem;color:var(--muted)}
 .top .hi{margin:0;font-size:.9rem;font-weight:600;color:var(--ink)}
 .hr{display:flex;align-items:center;gap:8px}
-.refbtn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);font-size:1rem;cursor:pointer;flex:none;padding:0;line-height:1}
+.hirow{display:flex;align-items:center;gap:6px;min-width:0}
+.hirow .hi{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.top>div:first-child{min-width:0}
+@media (max-width:440px){.hver{display:none}}
+@media (max-width:400px){.hr{gap:5px}.refbtn{width:26px;height:26px;font-size:.8rem!important}.top .langbtn{min-width:38px;padding:0 7px}}
+.hver{font-size:.68rem;font-weight:700;color:var(--leaf-deep);background:var(--chip);border-radius:10px;padding:2px 6px;white-space:nowrap}
+.wl-ver{font-size:.8rem;font-weight:700;color:#1F6B4F;background:rgba(255,255,255,.75);border:1.5px solid rgba(31,107,79,.3);border-radius:12px;padding:3px 9px;white-space:nowrap}
+.wl-hirow{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px}.wl-hirow .wl-hello{margin:0}
+.refbtn{width:30px;height:30px;font-size:.9rem!important;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);font-size:1rem;cursor:pointer;flex:none;padding:0;line-height:1}
 .refbtn.spin,.wl-ref.spin{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.wl-ref{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:16px;width:38px;height:38px;border:1.5px solid rgba(31,107,79,.4);background:rgba(255,255,255,.7);border-radius:50%;font-size:1.05rem;cursor:pointer;padding:0;z-index:2}
+.wl-ref{width:36px;height:36px;flex:none;border:1.5px solid rgba(31,107,79,.4);background:rgba(255,255,255,.7);border-radius:50%;font-size:1.05rem;cursor:pointer;padding:0;z-index:2}
 .welcome{position:fixed;inset:0;z-index:60;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:12px;padding:calc(26px + env(safe-area-inset-top,0px)) 22px calc(24px + env(safe-area-inset-bottom,0px));
   background:radial-gradient(40% 22% at 12% 18%,rgba(255,255,255,.6),transparent 70%),radial-gradient(34% 20% at 88% 34%,rgba(214,236,176,.8),transparent 70%),radial-gradient(46% 26% at 18% 82%,rgba(120,178,88,.45),transparent 70%),radial-gradient(40% 24% at 92% 92%,rgba(168,208,118,.55),transparent 70%),linear-gradient(180deg,#EEF6E4 0%,#D3E8BC 46%,#E6F1D8 100%)}
 .welcome[hidden]{display:none}
@@ -493,10 +502,10 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 
 <header class="top">
   <div>
-    <p class="hi" id="hello">Namaste 👋</p>
+    <div class="hirow"><p class="hi" id="hello">Namaste 👋</p><button class="refbtn" id="bRef" aria-label="Refresh karo" title="Refresh karo">🔄</button><small class="hver" id="hVer" data-notr></small></div>
     <h1>Calorie Diagnosis</h1>
   </div>
-  <div class="hr"><div class="clock"><span id="clkDay"></span><b id="clkTime"></b></div><button class="refbtn" id="bRef" aria-label="Refresh karo" title="Refresh karo">🔄</button><button class="langbtn" id="bLang" aria-label="Language">EN</button><button class="helpbtn" id="bHelp" aria-label="App kaise chalayein">?</button></div>
+  <div class="hr"><div class="clock"><span id="clkDay"></span><b id="clkTime"></b></div><button class="langbtn" id="bLang" aria-label="Language">EN</button><button class="helpbtn" id="bHelp" aria-label="App kaise chalayein">?</button></div>
 </header>
 
 <main>
@@ -678,8 +687,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 
 <div id="welcome" class="welcome" data-notr role="dialog" aria-label="Calorie Diagnosis">
   <button class="wl-lang" id="wlLang">EN</button>
-  <button class="wl-ref" id="wlRef" aria-label="Refresh">🔄</button>
-  <div class="wl-top"><svg class="wl-logo" viewBox="0 0 120 110" aria-hidden="true"><defs><linearGradient id="wlg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#2E8B57"/><stop offset="1" stop-color="#9ACD32"/></linearGradient></defs><circle cx="50" cy="20" r="9" fill="#1F6B52"/><circle cx="75" cy="13" r="11" fill="#2E7D5B"/><path d="M42 34C20 48 18 80 42 101C34 80 36 56 50 40Z" fill="#1F6B52"/><path d="M48 101C42 70 58 38 104 30C104 66 86 97 48 101Z" fill="url(#wlg)"/><path d="M52 95C64 72 78 56 97 40" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".75"/></svg><h1 class="wl-title">Calorie Diagnosis</h1><p class="wl-tag">Healthy Life • Better You</p><p class="wl-hello" id="wlHello"></p></div>
+  <div class="wl-top"><svg class="wl-logo" viewBox="0 0 120 110" aria-hidden="true"><defs><linearGradient id="wlg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#2E8B57"/><stop offset="1" stop-color="#9ACD32"/></linearGradient></defs><circle cx="50" cy="20" r="9" fill="#1F6B52"/><circle cx="75" cy="13" r="11" fill="#2E7D5B"/><path d="M42 34C20 48 18 80 42 101C34 80 36 56 50 40Z" fill="#1F6B52"/><path d="M48 101C42 70 58 38 104 30C104 66 86 97 48 101Z" fill="url(#wlg)"/><path d="M52 95C64 72 78 56 97 40" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".75"/></svg><h1 class="wl-title">Calorie Diagnosis</h1><p class="wl-tag">Healthy Life • Better You</p><div class="wl-hirow"><p class="wl-hello" id="wlHello"></p><button class="wl-ref" id="wlRef" aria-label="Refresh" title="Refresh">🔄</button><span class="wl-ver" id="wlVer"></span></div></div>
   <svg class="wl-plate" viewBox="0 0 320 210" aria-hidden="true">
 <ellipse cx="160" cy="182" rx="150" ry="24" fill="#B98A55"/><ellipse cx="160" cy="176" rx="146" ry="22" fill="#D4AC76"/>
 <path d="M20 170c20-22 48-26 70-14-24 2-46 8-70 14z" fill="#5E9E3A"/><path d="M300 168c-18-20-44-24-64-12 22 2 42 6 64 12z" fill="#6DAE45"/><path d="M40 186c16-8 34-8 46 2-16-2-30-2-46-2z" fill="#4E8E2E"/>
@@ -762,6 +770,7 @@ details.custom summary{cursor:pointer;color:var(--leaf-deep);font-weight:600}
 <script>
 'use strict';
 const VERSION = '1.28';
+setTimeout(() => ['hVer', 'wlVer'].forEach(id => { const e = document.getElementById(id); if (e) e.textContent = 'v' + VERSION; }), 0);
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad = n => String(n).padStart(2, '0');
